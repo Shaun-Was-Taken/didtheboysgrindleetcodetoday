@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image"; // Add this import
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useQuery } from "convex/react";
@@ -9,12 +10,22 @@ import { format, parseISO, eachDayOfInterval } from "date-fns";
 import "react-calendar-heatmap/dist/styles.css";
 import { useState } from "react";
 import { Badge } from "./ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog"; // Import Dialog components
 
 type SubmissionData = CalendarHeatmap.ReactCalendarHeatmapValue<string> & {
   date: string;
   count: number;
-  problemTitles?: string[];
-  difficulties?: string[];
+  submissions: {
+    problemTitle: string;
+    difficulty?: string;
+    screenshotUrl: string;
+  }[];
 };
 
 interface UserHeatmapCardProps {
@@ -28,8 +39,10 @@ export default function UserHeatmapCard({
   userName,
   userImage,
 }: UserHeatmapCardProps) {
-  const [tooltipData, setTooltipData] = useState<SubmissionData | null>(null);
-  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
+  // State for managing the popup/dialog
+  const [selectedDateData, setSelectedDateData] =
+    useState<SubmissionData | null>(null);
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
 
   // Get user's submissions from Convex
   const submissions =
@@ -49,22 +62,23 @@ export default function UserHeatmapCard({
   // Format data for heatmap
   const submissionsByDate = submissions.reduce(
     (acc: Record<string, SubmissionData>, submission) => {
-      const { submissionDate, problemTitle, difficulty } = submission;
+      const { submissionDate, problemTitle, difficulty, screenshotUrl } =
+        submission;
 
       if (!acc[submissionDate]) {
         acc[submissionDate] = {
           date: submissionDate,
           count: 0,
-          problemTitles: [],
-          difficulties: [],
+          submissions: [],
         };
       }
 
       acc[submissionDate].count += 1;
-      acc[submissionDate].problemTitles?.push(problemTitle);
-      if (difficulty) {
-        acc[submissionDate].difficulties?.push(difficulty);
-      }
+      acc[submissionDate].submissions.push({
+        problemTitle,
+        difficulty,
+        screenshotUrl,
+      });
 
       return acc;
     },
@@ -88,32 +102,29 @@ export default function UserHeatmapCard({
     );
   });
 
-  // Handle tooltip
-  const handleMouseOver = (
-    event: React.MouseEvent,
+  // Handle click on heatmap cell
+  const handleClick = (
     value: CalendarHeatmap.ReactCalendarHeatmapValue<string> | undefined
   ) => {
     const submissionValue = value as SubmissionData;
     if (submissionValue?.count > 0) {
-      setTooltipData(submissionValue);
-      setTooltipPosition({ x: event.clientX, y: event.clientY });
+      setSelectedDateData(submissionValue);
+      setIsPopupOpen(true);
     } else {
-      setTooltipData(null);
+      setSelectedDateData(null);
+      setIsPopupOpen(false);
     }
-  };
-
-  const handleMouseLeave = () => {
-    setTooltipData(null);
   };
 
   // Color scale function
   const getClassForValue = (
     value: CalendarHeatmap.ReactCalendarHeatmapValue<string> | undefined
   ) => {
-    if (!value?.count || value.count === 0) return "fill-muted";
-    if (value.count === 1) return "fill-green-300";
-    if (value.count === 2) return "fill-green-500";
-    return "fill-green-700";
+    if (!value?.count || value.count === 0) return "fill-muted cursor-default"; // Add cursor-default for empty cells
+    // Add cursor-pointer for clickable cells
+    if (value.count === 1) return "fill-green-300 cursor-pointer";
+    if (value.count === 2) return "fill-green-500 cursor-pointer";
+    return "fill-green-700 cursor-pointer";
   };
 
   // Helper to get badge color based on difficulty
@@ -130,7 +141,7 @@ export default function UserHeatmapCard({
     }
   };
 
-  // Calculate streak and total submissions
+  // Calculate total submissions
   const totalSubmissions = submissions?.length || 0;
 
   // Use profile data from query or from props
@@ -170,56 +181,78 @@ export default function UserHeatmapCard({
             endDate={endDate}
             values={emptyValues}
             classForValue={getClassForValue}
-            onMouseOver={handleMouseOver}
-            onMouseLeave={handleMouseLeave}
-            tooltipDataAttrs={() => ({})}
+            onClick={handleClick} // Add onClick handler
+            // Remove tooltip handlers and attrs
+            // onMouseOver={handleMouseOver}
+            // onMouseLeave={handleMouseLeave}
+            // tooltipDataAttrs={() => ({})}
           />
 
-          {tooltipData && (
-            <div
-              className="absolute z-10 p-2 bg-popover text-popover-foreground rounded-md shadow-md text-sm w-64"
-              style={{
-                left: `${tooltipPosition.x + 10}px`,
-                top: `${tooltipPosition.y + 10}px`,
-                transform: "translateY(-100%)",
-              }}
-            >
-              <div className="font-medium">
-                {format(parseISO(tooltipData.date), "MMMM d, yyyy")}
-              </div>
-              <div className="mt-1">
-                {tooltipData.count} submission
-                {tooltipData.count !== 1 ? "s" : ""}
-              </div>
-              {tooltipData.problemTitles &&
-                tooltipData.problemTitles.length > 0 && (
-                  <div className="mt-2">
-                    <div className="font-medium mb-1">Problems:</div>
-                    <ul className="space-y-1">
-                      {tooltipData.problemTitles.map((title, i) => (
+          {/* Remove Tooltip Div */}
+          {/* {tooltipData && (...)} */}
+        </div>
+      </CardContent>
+
+      {/* Dialog for displaying submission details */}
+      <Dialog open={isPopupOpen} onOpenChange={setIsPopupOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          {selectedDateData && (
+            <>
+              <DialogHeader>
+                <DialogTitle>
+                  Submissions on{" "}
+                  {format(parseISO(selectedDateData.date), "MMMM d, yyyy")}
+                </DialogTitle>
+                <DialogDescription>
+                  {selectedDateData.count} submission
+                  {selectedDateData.count !== 1 ? "s" : ""} by {displayName}
+                </DialogDescription>
+              </DialogHeader>
+              {selectedDateData.submissions &&
+                selectedDateData.submissions.length > 0 && (
+                  <div className="mt-4 max-h-[60vh] overflow-y-auto pr-2">
+                    <h4 className="font-medium mb-2">Problems Solved:</h4>
+                    <ul className="space-y-4">
+                      {selectedDateData.submissions.map((sub, i) => (
                         <li
                           key={i}
-                          className="flex items-center justify-between"
+                          className="text-sm border-b pb-4 last:border-b-0"
                         >
-                          <span className="truncate">{title}</span>
-                          {tooltipData.difficulties &&
-                            tooltipData.difficulties[i] && (
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="font-medium truncate mr-2">
+                              {sub.problemTitle}
+                            </span>
+                            {sub.difficulty && (
                               <Badge
                                 variant="outline"
-                                className={`ml-2 text-xs ${getDifficultyColor(tooltipData.difficulties[i])}`}
+                                className={`ml-auto text-xs ${getDifficultyColor(sub.difficulty)}`}
                               >
-                                {tooltipData.difficulties[i]}
+                                {sub.difficulty}
                               </Badge>
                             )}
+                          </div>
+                          <Image
+                            src={sub.screenshotUrl}
+                            alt={`Screenshot for ${sub.problemTitle}`}
+                            width={400}
+                            height={200}
+                            className="rounded-md border object-contain w-full h-auto"
+                            unoptimized
+                            onError={(e) => {
+                              const imgElement = e.target as HTMLImageElement;
+                              imgElement.src =
+                                "https://via.placeholder.com/400x200?text=Error+Loading+Image";
+                            }}
+                          />
                         </li>
                       ))}
                     </ul>
                   </div>
                 )}
-            </div>
+            </>
           )}
-        </div>
-      </CardContent>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }
