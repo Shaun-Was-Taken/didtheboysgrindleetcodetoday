@@ -32,17 +32,19 @@ export default function UserHeatmapCard({
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
 
   // Get user's submissions from Convex
-  const submissions = useQuery(api.leetcode.getSubmissionsByUser, { userId }) || [];
-  
+  const submissions =
+    useQuery(api.leetcode.getSubmissionsByUser, { userId }) || [];
+
   // Get user's profile if not provided via props
   const userProfile = useQuery(
     api.user.getUserProfile,
     userName === undefined && userId ? { userId } : "skip"
   ) || { name: "User", imageUrl: "" };
 
-  // Calculate date range for heatmap
-  const endDate = new Date();
-  const startDate = subYears(endDate, 1);
+  // Calculate date range for heatmap (current calendar year)
+  const currentYear = new Date().getFullYear();
+  const startDate = new Date(currentYear, 0, 1); // January 1st
+  const endDate = new Date(currentYear, 11, 31); // December 31st
 
   // Format data for heatmap
   const submissionsByDate = submissions.reduce(
@@ -134,7 +136,7 @@ export default function UserHeatmapCard({
   // Use profile data from query or from props
   const displayName = userName || (userProfile ? userProfile.name : "User");
   const displayImage = userImage || (userProfile ? userProfile.imageUrl : "");
-  
+
   // Get the initials for avatar fallback
   const getInitials = () => {
     if (!displayName) return "U";

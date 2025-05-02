@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { useMutation } from "convex/react";
+import { useMutation, useConvex } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Button } from "./ui/button";
 import { Loader2, Upload } from "lucide-react";
@@ -10,13 +10,16 @@ interface ScreenshotUploaderProps {
   onUploadComplete: (url: string) => void;
 }
 
-export default function ScreenshotUploader({ onUploadComplete }: ScreenshotUploaderProps) {
+export default function ScreenshotUploader({
+  onUploadComplete,
+}: ScreenshotUploaderProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+
   const generateUploadUrl = useMutation(api.files.generateUploadUrl);
+  const convex = useConvex();
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -25,14 +28,14 @@ export default function ScreenshotUploader({ onUploadComplete }: ScreenshotUploa
     // Show local preview
     const localUrl = URL.createObjectURL(file);
     setPreviewUrl(localUrl);
-    
+
     setIsUploading(true);
     setUploadProgress(0);
-    
+
     try {
       // Get a URL for uploading
       const uploadUrl = await generateUploadUrl();
-      
+
       // Prepare to track upload progress
       const xhr = new XMLHttpRequest();
       xhr.upload.addEventListener("progress", (event) => {
@@ -63,13 +66,14 @@ export default function ScreenshotUploader({ onUploadComplete }: ScreenshotUploa
 
       // Wait for upload to complete
       const storageId = await uploadPromise;
-      
-      // Get the URL for the uploaded file
-      const fileUrl = `https://your-convex-app.convex.cloud/api/storage/${storageId}`;
-      
+
+      // Get the URL for the uploaded file using Convex's storage.getUrl
+      // We need to call the query directly since we need the result immediately after upload
+      const fileUrl = await convex.query(api.files.getUrl, { storageId });
+
       // Send the URL back to the parent component
-      onUploadComplete(fileUrl);
-      
+      if (fileUrl) onUploadComplete(fileUrl);
+
       // Reset the file input
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
@@ -95,16 +99,16 @@ export default function ScreenshotUploader({ onUploadComplete }: ScreenshotUploa
         className="hidden"
         accept="image/*"
       />
-      
-      <div 
+
+      <div
         onClick={triggerFileInput}
         className="border-2 border-dashed border-input rounded-lg p-6 cursor-pointer hover:border-primary transition-colors"
       >
         {previewUrl ? (
           <div className="relative">
-            <img 
-              src={previewUrl} 
-              alt="Screenshot preview" 
+            <img
+              src={previewUrl}
+              alt="Screenshot preview"
               className="w-full h-auto max-h-64 object-contain rounded-md"
             />
             {isUploading && (
@@ -128,11 +132,11 @@ export default function ScreenshotUploader({ onUploadComplete }: ScreenshotUploa
           </div>
         )}
       </div>
-      
+
       {previewUrl && !isUploading && (
-        <Button 
-          variant="outline" 
-          className="mt-2 w-full" 
+        <Button
+          variant="outline"
+          className="mt-2 w-full"
           onClick={triggerFileInput}
         >
           Change image

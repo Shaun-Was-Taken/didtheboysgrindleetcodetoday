@@ -9,10 +9,11 @@ import { api } from "../../convex/_generated/api";
 import UserHeatmapCard from "./UserHeatmapCard";
 import { Button } from "./ui/button";
 import Link from "next/link";
+import CountdownTimer from "./CountdownTimer";
 
 const HeroSection = () => {
   const { user, isSignedIn } = useUser();
-  
+
   // Query user info (not using directly but keeping for future use)
   useQuery(
     api.user.getUserInfo,
@@ -44,6 +45,11 @@ const HeroSection = () => {
           visualization. Submit your solutions and build your streak! 🔥
         </p>
 
+        {/* Countdown Timer to May 19, 2025 */}
+        <div className="mb-10">
+          <CountdownTimer />
+        </div>
+
         <div className="flex flex-col items-center gap-10">
           {isSignedIn && (
             <div className="w-full flex justify-end">
@@ -66,26 +72,23 @@ const HeroSection = () => {
                 userImage={user.imageUrl}
               />
             )}
-            
+
             {/* Show other users from submissions */}
-            {allUsers && allUsers.length > 0 ? (
-              // Filter out current user (we already added their card)
-              allUsers
-                .filter(userId => !isSignedIn || userId !== user?.id)
-                .map((userId) => (
-                  <UserHeatmapCard
-                    key={userId}
-                    userId={userId}
-                  />
-                ))
-            ) : !isSignedIn && (
-              <div className="col-span-2 text-center p-8 border border-dashed rounded-lg">
-                <p className="text-muted-foreground">
-                  No submissions yet. Be the first to upload your LeetCode
-                  progress!
-                </p>
-              </div>
-            )}
+            {allUsers && allUsers.length > 0
+              ? // Filter out current user (we already added their card)
+                allUsers
+                  .filter((userId) => !isSignedIn || userId !== user?.id)
+                  .map((userId) => (
+                    <UserHeatmapCard key={userId} userId={userId} />
+                  ))
+              : !isSignedIn && (
+                  <div className="col-span-2 text-center p-8 border border-dashed rounded-lg">
+                    <p className="text-muted-foreground">
+                      No submissions yet. Be the first to upload your LeetCode
+                      progress!
+                    </p>
+                  </div>
+                )}
           </div>
         </div>
       </div>
