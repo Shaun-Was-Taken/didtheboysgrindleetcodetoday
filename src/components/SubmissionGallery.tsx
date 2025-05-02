@@ -7,6 +7,7 @@ import { Card } from "./ui/card";
 import { format, parseISO } from "date-fns";
 import { Dialog, DialogContent, DialogTrigger } from "./ui/dialog";
 import { Badge } from "./ui/badge";
+import Image from "next/image";
 
 export default function SubmissionGallery() {
   const { user, isSignedIn } = useUser();
@@ -79,13 +80,16 @@ export default function SubmissionGallery() {
             <Dialog>
               <DialogTrigger className="w-full text-left">
                 <div className="relative aspect-video w-full overflow-hidden">
-                  <img
+                  <Image
                     src={submission.screenshotUrl}
                     alt={submission.problemTitle}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    width={400}
+                    height={200}
+                    unoptimized
                     onError={(e) => {
-                      (e.target as HTMLImageElement).src =
-                        "https://via.placeholder.com/400x200?text=Error+Loading+Image";
+                      const imgElement = e.target as HTMLImageElement;
+                      imgElement.src = "https://via.placeholder.com/400x200?text=Error+Loading+Image";
                     }}
                   />
                   {submission.difficulty && (
@@ -134,13 +138,16 @@ export default function SubmissionGallery() {
                   </div>
 
                   <div className="overflow-hidden rounded-md border">
-                    <img
+                    <Image
                       src={submission.screenshotUrl}
                       alt={submission.problemTitle}
                       className="w-full h-auto"
+                      width={800}
+                      height={600}
+                      unoptimized
                       onError={(e) => {
-                        (e.target as HTMLImageElement).src =
-                          "https://via.placeholder.com/800x600?text=Error+Loading+Image";
+                        const imgElement = e.target as HTMLImageElement;
+                        imgElement.src = "https://via.placeholder.com/800x600?text=Error+Loading+Image";
                       }}
                     />
                   </div>

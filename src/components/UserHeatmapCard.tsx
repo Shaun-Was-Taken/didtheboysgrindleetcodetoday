@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import CalendarHeatmap from "react-calendar-heatmap";
-import { format, parseISO, subYears, eachDayOfInterval } from "date-fns";
+import { format, parseISO, eachDayOfInterval } from "date-fns";
 import "react-calendar-heatmap/dist/styles.css";
 import { useState } from "react";
 import { Badge } from "./ui/badge";

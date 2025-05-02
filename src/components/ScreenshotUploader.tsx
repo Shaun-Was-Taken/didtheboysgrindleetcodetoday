@@ -5,6 +5,7 @@ import { useMutation, useConvex } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Button } from "./ui/button";
 import { Loader2, Upload } from "lucide-react";
+import Image from "next/image";
 
 interface ScreenshotUploaderProps {
   onUploadComplete: (url: string) => void;
@@ -106,10 +107,13 @@ export default function ScreenshotUploader({
       >
         {previewUrl ? (
           <div className="relative">
-            <img
+            <Image
               src={previewUrl}
               alt="Screenshot preview"
               className="w-full h-auto max-h-64 object-contain rounded-md"
+              width={500}
+              height={300}
+              unoptimized
             />
             {isUploading && (
               <div className="absolute inset-0 bg-background/50 flex items-center justify-center">
