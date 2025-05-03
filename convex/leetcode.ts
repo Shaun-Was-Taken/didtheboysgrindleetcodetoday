@@ -17,6 +17,28 @@ export const addSubmission = mutation({
       screenshotUrl: args.screenshotUrl,
       difficulty: args.difficulty,
     });
+
+    // Update daily completion count
+    const todayDate = args.submissionDate; // Assuming submissionDate is YYYY-MM-DD
+    const existingCompletion = await ctx.db
+      .query("dailyCompletions")
+      .withIndex("by_user_date", (q) =>
+        q.eq("userId", args.userId).eq("date", todayDate)
+      )
+      .unique();
+
+    if (existingCompletion) {
+      await ctx.db.patch(existingCompletion._id, {
+        count: existingCompletion.count + 1,
+      });
+    } else {
+      await ctx.db.insert("dailyCompletions", {
+        userId: args.userId,
+        date: todayDate,
+        count: 1,
+      });
+    }
+
     return submissionId;
   },
 });
@@ -60,5 +82,39 @@ export const getAllUsers = query({
     const userIds = [...new Set(submissions.map((sub) => sub.userId))];
 
     return userIds;
+  },
+});
+
+export const getDailyCompletions = query({
+  args: { date: v.string() }, // Expecting date in YYYY-MM-DD format
+  handler: async (ctx, args) => {
+    // 1. Fetch all registered users
+    const allUsers = await ctx.db.query("users").collect();
+
+    // 2. Fetch completions for the specified date
+    const completionsToday = await ctx.db
+      .query("dailyCompletions")
+      .withIndex("by_date", (q) => q.eq("date", args.date))
+      .collect();
+
+    // 3. Create a map of completions for quick lookup
+    const completionsMap = new Map(
+      completionsToday.map((comp) => [comp.userId, comp.count])
+    );
+
+    // 4. Merge all users with their completion data (or default to 0)
+    const leaderboardData = allUsers.map((user) => {
+      const count = completionsMap.get(user.clerkId) || 0;
+      return {
+        userId: user.clerkId,
+        userName: user.name,
+        userImage: user.imageUrl,
+        count: count,
+        date: args.date, // Include the date for consistency if needed
+        // You might not need _id and _creationTime from dailyCompletions here
+      };
+    });
+
+    return leaderboardData;
   },
 });

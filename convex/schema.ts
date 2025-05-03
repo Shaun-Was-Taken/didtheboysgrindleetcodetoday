@@ -16,7 +16,7 @@ export default defineSchema({
     .index("by_clerkId", ["clerkId"])
     .index("by_email", ["email"])
     .index("by_stripe_customer_id", ["stripeCustomerID"]),
-  
+
   leetcodeSubmissions: defineTable({
     userId: v.string(),
     problemTitle: v.string(),
@@ -26,4 +26,12 @@ export default defineSchema({
   })
     .index("by_userId", ["userId"])
     .index("by_date", ["submissionDate"]),
+
+  dailyCompletions: defineTable({
+    userId: v.string(),
+    date: v.string(), // Format: YYYY-MM-DD
+    count: v.number(),
+  })
+    .index("by_user_date", ["userId", "date"])
+    .index("by_date", ["date"]),
 });

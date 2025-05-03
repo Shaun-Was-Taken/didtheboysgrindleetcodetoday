@@ -10,6 +10,7 @@ import UserHeatmapCard from "./UserHeatmapCard";
 import { Button } from "./ui/button";
 import Link from "next/link";
 import CountdownTimer from "./CountdownTimer";
+import DailyLeaderboard from "./DailyLeaderboard";
 
 const HeroSection = () => {
   const { user, isSignedIn } = useUser();
@@ -48,6 +49,10 @@ const HeroSection = () => {
         {/* Countdown Timer to May 19, 2025 */}
         <div className="mb-10">
           <CountdownTimer />
+        </div>
+
+        <div className="mb-10">
+          <DailyLeaderboard />
         </div>
 
         <div className="flex flex-col items-center gap-10">
