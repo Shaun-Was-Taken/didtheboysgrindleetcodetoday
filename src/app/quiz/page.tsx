@@ -263,7 +263,8 @@ export default function QuizPage() {
                   <Brain className="h-12 w-12 mx-auto mb-4 opacity-50" />
                   <p>No quiz generated yet</p>
                   <p className="text-sm">
-                    Configure your preferences and click "Generate Quiz"
+                    Configure your preferences and click &quot;Generate
+                    Quiz&quot;
                   </p>
                 </div>
               )}
