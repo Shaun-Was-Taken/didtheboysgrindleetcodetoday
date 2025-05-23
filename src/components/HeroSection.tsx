@@ -9,7 +9,6 @@ import { api } from "../../convex/_generated/api";
 import UserHeatmapCard from "./UserHeatmapCard";
 import { Button } from "./ui/button";
 import Link from "next/link";
-import CountdownTimer from "./CountdownTimer";
 import DailyLeaderboard from "./DailyLeaderboard";
 
 const HeroSection = () => {
@@ -45,11 +44,6 @@ const HeroSection = () => {
           Track your LeetCode grinding progress with our beautiful heatmap
           visualization. Submit your solutions and build your streak! 🔥
         </p>
-
-        {/* Countdown Timer to May 19, 2025 */}
-        {/* <div className="mb-10">
-          <CountdownTimer />
-        </div> */}
 
         <div className="mb-10">
           <DailyLeaderboard />
