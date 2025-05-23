@@ -1,7 +1,7 @@
 "use client";
 
 import { AuroraText } from "@/components/magicui/aurora-text";
-import { Code, Upload } from "lucide-react";
+import { Code, Upload, Brain } from "lucide-react";
 import { useUser } from "@clerk/clerk-react";
 import { SparklesText } from "./magicui/sparkles-text";
 import { useQuery } from "convex/react";
@@ -47,9 +47,9 @@ const HeroSection = () => {
         </p>
 
         {/* Countdown Timer to May 19, 2025 */}
-        <div className="mb-10">
+        {/* <div className="mb-10">
           <CountdownTimer />
-        </div>
+        </div> */}
 
         <div className="mb-10">
           <DailyLeaderboard />
@@ -57,7 +57,13 @@ const HeroSection = () => {
 
         <div className="flex flex-col items-center gap-10">
           {isSignedIn && (
-            <div className="w-full flex justify-end">
+            <div className="w-full flex justify-end gap-4">
+              <Button asChild className="gap-2" variant="outline">
+                <Link href="/quiz">
+                  <Brain className="h-4 w-4" />
+                  Generate Quiz
+                </Link>
+              </Button>
               <Button asChild className="gap-2">
                 <Link href="/upload">
                   <Upload className="h-4 w-4" />
