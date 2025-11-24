@@ -34,4 +34,12 @@ export default defineSchema({
   })
     .index("by_user_date", ["userId", "date"])
     .index("by_date", ["date"]),
+
+  garminJobs: defineTable({
+    jobId: v.string(),
+    title: v.string(),
+    link: v.string(),
+    location: v.optional(v.string()),
+    firstSeen: v.string(),
+  }).index("by_jobId", ["jobId"]),
 });

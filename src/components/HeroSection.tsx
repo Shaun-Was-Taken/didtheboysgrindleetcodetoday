@@ -10,6 +10,7 @@ import UserHeatmapCard from "./UserHeatmapCard";
 import { Button } from "./ui/button";
 import Link from "next/link";
 import DailyLeaderboard from "./DailyLeaderboard";
+import GarminJobs from "./GarminJobs";
 
 const HeroSection = () => {
   const { user, isSignedIn } = useUser();
@@ -44,6 +45,10 @@ const HeroSection = () => {
           Track your LeetCode grinding progress with our beautiful heatmap
           visualization. Submit your solutions and build your streak! 🔥
         </p>
+
+        <div className="mb-10">
+          <GarminJobs />
+        </div>
 
         <div className="mb-10">
           <DailyLeaderboard />
