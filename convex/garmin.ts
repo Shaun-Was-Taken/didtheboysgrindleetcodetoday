@@ -61,10 +61,19 @@ export const fetchGarminJobs = internalAction({
     }
 
     if (allRelevantJobs.length > 0) {
-      await ctx.runMutation(internal.garmin.saveGarminJobs, { jobs: allRelevantJobs });
+      const newJobsCount: number = await ctx.runMutation(internal.garmin.saveGarminJobs, { jobs: allRelevantJobs });
+      
+      if (newJobsCount > 0) {
+        console.log(`🎉 Found ${newJobsCount} NEW Garmin job(s)!`);
+      } else {
+        console.log("✅ No new Garmin jobs (all jobs already tracked)");
+      }
+      
+      return { status: "success", jobsFound: allRelevantJobs.length, newJobs: newJobsCount, pagesScanned: page - 1 };
     }
     
-    return { status: "success", jobsFound: allRelevantJobs.length, pagesScanned: page - 1 };
+    console.log("✅ No new Garmin jobs found");
+    return { status: "success", jobsFound: 0, newJobs: 0, pagesScanned: page - 1 };
   },
 });
 

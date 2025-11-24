@@ -59,10 +59,19 @@ export const fetchAmazonJobs = internalAction({
       }));
 
       if (jobsToSave.length > 0) {
-        await ctx.runMutation(internal.amazon.saveAmazonJobs, { jobs: jobsToSave });
+        const newJobsCount: number = await ctx.runMutation(internal.amazon.saveAmazonJobs, { jobs: jobsToSave });
+        
+        if (newJobsCount > 0) {
+          console.log(`🎉 Found ${newJobsCount} NEW Amazon job(s)!`);
+        } else {
+          console.log("✅ No new Amazon jobs (all jobs already tracked)");
+        }
+        
+        return { status: "success", jobsFound: jobsToSave.length, newJobs: newJobsCount };
       }
 
-      return { status: "success", jobsFound: jobsToSave.length };
+      console.log("✅ No new Amazon jobs found");
+      return { status: "success", jobsFound: 0, newJobs: 0 };
     } catch (error) {
       console.error("Error fetching Amazon jobs:", error);
       return { status: "error", message: String(error) };
