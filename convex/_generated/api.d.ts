@@ -13,6 +13,7 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
+import type * as amazon from "../amazon.js";
 import type * as crons from "../crons.js";
 import type * as files from "../files.js";
 import type * as garmin from "../garmin.js";
@@ -30,6 +31,7 @@ import type * as user from "../user.js";
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  amazon: typeof amazon;
   crons: typeof crons;
   files: typeof files;
   garmin: typeof garmin;

@@ -42,4 +42,12 @@ export default defineSchema({
     location: v.optional(v.string()),
     firstSeen: v.string(),
   }).index("by_jobId", ["jobId"]),
+
+  amazonJobs: defineTable({
+    jobId: v.string(), // job_path from Amazon API
+    title: v.string(),
+    link: v.string(),
+    location: v.optional(v.string()),
+    firstSeen: v.string(),
+  }).index("by_jobId", ["jobId"]),
 });

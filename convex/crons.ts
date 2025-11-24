@@ -9,4 +9,10 @@ crons.interval(
   internal.garmin.fetchGarminJobs
 );
 
+crons.interval(
+  "amazon-job-monitor",
+  { hours: 1 },
+  internal.amazon.fetchAmazonJobs
+);
+
 export default crons;
