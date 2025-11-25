@@ -18,9 +18,18 @@ interface JobBoardProps {
   companyName: string;
   jobs: Job[] | undefined;
   fetchInterval?: string;
+  logoUrl?: string;
 }
 
-export default function JobBoard({ companyName, jobs, fetchInterval = "every hour" }: JobBoardProps) {
+import { useState, useEffect } from "react";
+
+export default function JobBoard({ companyName, jobs, fetchInterval = "every hour", logoUrl }: JobBoardProps) {
+  const [imageError, setImageError] = useState(false);
+
+  useEffect(() => {
+    setImageError(false);
+  }, [logoUrl]);
+
   if (!jobs) {
     return (
       <Card className="w-full">
@@ -39,8 +48,24 @@ export default function JobBoard({ companyName, jobs, fetchInterval = "every hou
       <CardHeader>
         <div className="flex items-start justify-between">
           <div>
-            <CardTitle className="text-2xl">{companyName}</CardTitle>
-            <div className="flex items-center gap-2 mt-2">
+            <div className="flex items-center gap-3 mb-2">
+              {logoUrl && !imageError ? (
+                <div className="w-10 h-10 rounded-md overflow-hidden bg-white border border-border flex items-center justify-center p-1 shrink-0">
+                  <img 
+                    src={logoUrl} 
+                    alt={`${companyName} logo`} 
+                    className="w-full h-full object-contain"
+                    onError={() => setImageError(true)}
+                  />
+                </div>
+              ) : (
+                <div className="w-10 h-10 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
+                  <span className="text-lg font-bold text-primary">{companyName.charAt(0)}</span>
+                </div>
+              )}
+              <CardTitle className="text-2xl">{companyName}</CardTitle>
+            </div>
+            <div className="flex items-center gap-2">
               <div className="relative flex items-center justify-center">
                 <div className="absolute w-2 h-2 bg-green-500 rounded-full animate-ping"></div>
                 <div className="w-2 h-2 bg-green-500 rounded-full"></div>

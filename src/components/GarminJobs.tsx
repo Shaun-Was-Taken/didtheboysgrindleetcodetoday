@@ -7,5 +7,5 @@ import JobBoard from "./JobBoard";
 export default function GarminJobs() {
   const jobs = useQuery(api.garmin.getJobs);
 
-  return <JobBoard companyName="Garmin" jobs={jobs} fetchInterval="every hour" />;
+  return <JobBoard companyName="Garmin" jobs={jobs} fetchInterval="every hour" logoUrl="https://www.google.com/s2/favicons?domain=garmin.com&sz=128" />;
 }
