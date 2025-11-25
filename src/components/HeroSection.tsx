@@ -12,6 +12,7 @@ import Link from "next/link";
 import DailyLeaderboard from "./DailyLeaderboard";
 import GarminJobs from "./GarminJobs";
 import AmazonJobs from "./AmazonJobs";
+import MicrosoftJobs from "./MicrosoftJobs";
 
 const HeroSection = () => {
   const { user, isSignedIn } = useUser();
@@ -47,9 +48,10 @@ const HeroSection = () => {
           visualization. Submit your solutions and build your streak! 🔥
         </p>
 
-        <div className="grid gap-8 md:grid-cols-2 mb-10 max-w-5xl mx-auto">
+        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 mb-10 max-w-7xl mx-auto">
           <GarminJobs />
           <AmazonJobs />
+          <MicrosoftJobs />
         </div>
 
         <div className="mb-10">

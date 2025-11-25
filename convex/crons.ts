@@ -15,4 +15,10 @@ crons.interval(
   internal.amazon.fetchAmazonJobs
 );
 
+crons.interval(
+  "microsoft-job-monitor",
+  { hours: 1 },
+  internal.microsoft.fetchMicrosoftJobs
+);
+
 export default crons;

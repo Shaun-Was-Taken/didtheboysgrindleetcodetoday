@@ -19,6 +19,7 @@ import type * as files from "../files.js";
 import type * as garmin from "../garmin.js";
 import type * as http from "../http.js";
 import type * as leetcode from "../leetcode.js";
+import type * as microsoft from "../microsoft.js";
 import type * as stripe from "../stripe.js";
 import type * as user from "../user.js";
 
@@ -37,6 +38,7 @@ declare const fullApi: ApiFromModules<{
   garmin: typeof garmin;
   http: typeof http;
   leetcode: typeof leetcode;
+  microsoft: typeof microsoft;
   stripe: typeof stripe;
   user: typeof user;
 }>;
