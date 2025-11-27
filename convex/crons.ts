@@ -21,4 +21,10 @@ crons.interval(
   internal.microsoft.fetchMicrosoftJobs
 );
 
+crons.interval(
+  "atlassian-job-monitor",
+  { hours: 1 },
+  internal.atlassian.fetchAtlassianJobs
+);
+
 export default crons;

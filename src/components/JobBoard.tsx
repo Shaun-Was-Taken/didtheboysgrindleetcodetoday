@@ -19,16 +19,30 @@ interface JobBoardProps {
   jobs: Job[] | undefined;
   fetchInterval?: string;
   logoUrl?: string;
+  maxHeight?: string;
 }
 
 import { useState, useEffect } from "react";
+import { Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
 
-export default function JobBoard({ companyName, jobs, fetchInterval = "every hour", logoUrl }: JobBoardProps) {
+export default function JobBoard({ companyName, jobs, fetchInterval = "every hour", logoUrl, maxHeight = "max-h-[600px]" }: JobBoardProps) {
   const [imageError, setImageError] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filteredJobs, setFilteredJobs] = useState<Job[]>([]);
 
   useEffect(() => {
     setImageError(false);
   }, [logoUrl]);
+
+  useEffect(() => {
+    if (jobs) {
+      const filtered = jobs.filter(job => 
+        job.title.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setFilteredJobs(filtered);
+    }
+  }, [jobs, searchQuery]);
 
   if (!jobs) {
     return (
@@ -46,7 +60,7 @@ export default function JobBoard({ companyName, jobs, fetchInterval = "every hou
   return (
     <Card className="w-full max-w-2xl">
       <CardHeader>
-        <div className="flex items-start justify-between">
+        <div className="flex items-start justify-between mb-4">
           <div>
             <div className="flex items-center gap-3 mb-2">
               {logoUrl && !imageError ? (
@@ -74,16 +88,29 @@ export default function JobBoard({ companyName, jobs, fetchInterval = "every hou
             </div>
           </div>
           <Badge variant="secondary" className="text-sm">
-            {jobs.length} {jobs.length === 1 ? "job" : "jobs"}
+            {filteredJobs.length} {filteredJobs.length === 1 ? "job" : "jobs"}
           </Badge>
+        </div>
+        
+        <div className="relative">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            type="search"
+            placeholder="Search jobs..."
+            className="pl-9"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
         </div>
       </CardHeader>
       <CardContent>
-        {jobs.length === 0 ? (
-          <p className="text-muted-foreground text-center py-4">No relevant jobs found yet.</p>
+        {filteredJobs.length === 0 ? (
+          <p className="text-muted-foreground text-center py-4">
+            {jobs.length === 0 ? "No relevant jobs found yet." : "No jobs match your search."}
+          </p>
         ) : (
-          <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2">
-            {jobs.map((job) => (
+          <div className={`space-y-3 ${maxHeight} overflow-y-auto pr-2`}>
+            {filteredJobs.map((job) => (
               <Card key={job.jobId} className="hover:shadow-md transition-shadow border-l-4 border-l-primary">
                 <CardContent className="p-4">
                   <div className="flex flex-col gap-2">

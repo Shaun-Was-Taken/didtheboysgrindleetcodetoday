@@ -13,6 +13,7 @@ import DailyLeaderboard from "./DailyLeaderboard";
 import GarminJobs from "./GarminJobs";
 import AmazonJobs from "./AmazonJobs";
 import MicrosoftJobs from "./MicrosoftJobs";
+import AtlassianJobs from "./AtlassianJobs";
 
 const HeroSection = () => {
   const { user, isSignedIn } = useUser();
@@ -52,6 +53,10 @@ const HeroSection = () => {
           <GarminJobs />
           <AmazonJobs />
           <MicrosoftJobs />
+        </div>
+
+        <div className="flex justify-center mb-10 max-w-7xl mx-auto">
+          <AtlassianJobs />
         </div>
 
         <div className="mb-10">

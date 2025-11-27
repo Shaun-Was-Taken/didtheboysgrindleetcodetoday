@@ -58,4 +58,12 @@ export default defineSchema({
     location: v.optional(v.string()),
     firstSeen: v.string(),
   }).index("by_jobId", ["jobId"]),
+
+  atlassianJobs: defineTable({
+    jobId: v.string(),
+    title: v.string(),
+    link: v.string(),
+    location: v.optional(v.string()),
+    firstSeen: v.string(),
+  }).index("by_jobId", ["jobId"]),
 });
