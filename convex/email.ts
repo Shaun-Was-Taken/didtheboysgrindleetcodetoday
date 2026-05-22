@@ -1,5 +1,6 @@
 import { internalAction } from "./_generated/server";
 import { v } from "convex/values";
+import { internal } from "./_generated/api";
 
 interface JobInfo {
   title: string;
@@ -9,11 +10,10 @@ interface JobInfo {
 }
 
 /**
- * Send an email notification via Mailgun when new job postings are detected.
+ * Send an email notification via Resend when new job postings are detected.
  * 
  * Required environment variables (set in Convex dashboard):
- *   - MAILGUN_API_KEY: Your Mailgun API key
- *   - MAILGUN_DOMAIN: Your Mailgun domain (e.g., mg.yourdomain.com)
+ *   - RESEND_API_KEY: Your Resend API key
  *   - NOTIFICATION_EMAIL: The email address to send notifications to
  */
 export const sendNewJobsEmail = internalAction({
@@ -28,13 +28,12 @@ export const sendNewJobsEmail = internalAction({
     ),
   },
   handler: async (_ctx, args) => {
-    const apiKey = process.env.MAILGUN_API_KEY;
-    const domain = process.env.MAILGUN_DOMAIN;
+    const apiKey = process.env.RESEND_API_KEY;
     const toEmail = process.env.NOTIFICATION_EMAIL;
 
-    if (!apiKey || !domain || !toEmail) {
+    if (!apiKey || !toEmail) {
       console.error(
-        "Missing Mailgun environment variables. Set MAILGUN_API_KEY, MAILGUN_DOMAIN, and NOTIFICATION_EMAIL in your Convex dashboard."
+        "Missing environment variables. Set RESEND_API_KEY and NOTIFICATION_EMAIL in your Convex dashboard."
       );
       return { status: "error", message: "Missing email configuration" };
     }
@@ -46,31 +45,26 @@ export const sendNewJobsEmail = internalAction({
 
     const subject = `🚀 ${args.jobs.length} New ${args.company} Job${args.jobs.length > 1 ? "s" : ""} Found!`;
     const htmlBody = buildEmailHtml(args.company, jobsWithCompany);
-    const textBody = buildEmailText(args.company, jobsWithCompany);
 
     try {
-      const formData = new URLSearchParams();
-      formData.append("from", `Job Alerts <noreply@${domain}>`);
-      formData.append("to", toEmail);
-      formData.append("subject", subject);
-      formData.append("html", htmlBody);
-      formData.append("text", textBody);
-
-      const response = await fetch(
-        `https://api.mailgun.net/v3/${domain}/messages`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Basic ${btoa(`api:${apiKey}`)}`,
-          },
-          body: formData,
-        }
-      );
+      const response = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from: "Job Alerts <onboarding@resend.dev>",
+          to: [toEmail],
+          subject,
+          html: htmlBody,
+        }),
+      });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error(`Mailgun API error (${response.status}):`, errorText);
-        return { status: "error", message: errorText };
+        const errorData = await response.json();
+        console.error(`Resend API error (${response.status}):`, JSON.stringify(errorData));
+        return { status: "error", message: JSON.stringify(errorData) };
       }
 
       const result = await response.json();
@@ -79,7 +73,7 @@ export const sendNewJobsEmail = internalAction({
       );
       return { status: "success", messageId: result.id };
     } catch (error) {
-      console.error("Error sending email via Mailgun:", error);
+      console.error("Error sending email via Resend:", error);
       return { status: "error", message: String(error) };
     }
   },
@@ -144,13 +138,33 @@ function buildEmailHtml(company: string, jobs: JobInfo[]): string {
 </html>`;
 }
 
-function buildEmailText(company: string, jobs: JobInfo[]): string {
-  const jobLines = jobs
-    .map(
-      (job, i) =>
-        `${i + 1}. ${job.title}${job.location ? ` (${job.location})` : ""}\n   ${job.link}`
-    )
-    .join("\n\n");
-
-  return `🚀 ${jobs.length} New ${company} Job(s) Found!\n\n${jobLines}\n\n---\nSent by your Job Monitor`;
-}
+/**
+ * Test action to verify email sending works.
+ * Run with: npx convex run email:testEmailSending
+ */
+export const testEmailSending = internalAction({
+  args: {},
+  handler: async (ctx) => {
+    console.log("🧪 Sending test email...");
+    const result: any = await ctx.runAction(
+      internal.email.sendNewJobsEmail,
+      {
+        company: "TestCompany",
+        jobs: [
+          {
+            title: "Software Engineer I (Test Job)",
+            link: "https://example.com/jobs/test-1",
+            location: "Remote, US",
+          },
+          {
+            title: "Software Engineer II (Test Job)",
+            link: "https://example.com/jobs/test-2",
+            location: "Austin, TX",
+          },
+        ],
+      }
+    );
+    console.log("🧪 Test email result:", JSON.stringify(result));
+    return result;
+  },
+});
