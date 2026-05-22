@@ -62,15 +62,19 @@ export const fetchAtlassianJobs = internalAction({
       }));
 
       if (jobsToSave.length > 0) {
-        const newJobsCount: number = await ctx.runMutation(internal.atlassian.saveAtlassianJobs, { jobs: jobsToSave });
+        const newJobs: { title: string; link: string; location?: string }[] = await ctx.runMutation(internal.atlassian.saveAtlassianJobs, { jobs: jobsToSave });
         
-        if (newJobsCount > 0) {
-          console.log(`🎉 Found ${newJobsCount} NEW Atlassian job(s)!`);
+        if (newJobs.length > 0) {
+          console.log(`🎉 Found ${newJobs.length} NEW Atlassian job(s)!`);
+          await ctx.runAction(internal.email.sendNewJobsEmail, {
+            company: "Atlassian",
+            jobs: newJobs,
+          });
         } else {
           console.log("✅ No new Atlassian jobs (all jobs already tracked)");
         }
         
-        return { status: "success", jobsFound: jobsToSave.length, newJobs: newJobsCount };
+        return { status: "success", jobsFound: jobsToSave.length, newJobs: newJobs.length };
       }
 
       return { status: "success", jobsFound: 0, newJobs: 0 };
@@ -94,7 +98,7 @@ export const saveAtlassianJobs = internalMutation({
     ),
   },
   handler: async (ctx, args) => {
-    let newJobsCount = 0;
+    const newJobs: { title: string; link: string; location?: string }[] = [];
     for (const job of args.jobs) {
       const existing = await ctx.db
         .query("atlassianJobs")
@@ -103,11 +107,11 @@ export const saveAtlassianJobs = internalMutation({
 
       if (!existing) {
         await ctx.db.insert("atlassianJobs", job);
-        newJobsCount++;
+        newJobs.push({ title: job.title, link: job.link, location: job.location });
         console.log(`New Atlassian Job found: ${job.title} - ${job.link}`);
       }
     }
-    return newJobsCount;
+    return newJobs;
   },
 });
 

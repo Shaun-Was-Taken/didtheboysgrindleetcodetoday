@@ -50,13 +50,17 @@ export const fetchMicrosoftJobs = internalAction({
       });
 
       if (jobsToSave.length > 0) {
-        const newJobsCount: number = await ctx.runMutation(
+        const newJobs: { title: string; link: string; location?: string }[] = await ctx.runMutation(
           internal.microsoft.saveMicrosoftJobs, 
           { jobs: jobsToSave }
         );
         
-        if (newJobsCount > 0) {
-          console.log(`🎉 Found ${newJobsCount} NEW Microsoft job(s)!`);
+        if (newJobs.length > 0) {
+          console.log(`🎉 Found ${newJobs.length} NEW Microsoft job(s)!`);
+          await ctx.runAction(internal.email.sendNewJobsEmail, {
+            company: "Microsoft",
+            jobs: newJobs,
+          });
         } else {
           console.log("✅ No new Microsoft jobs (all jobs already tracked)");
         }
@@ -64,7 +68,7 @@ export const fetchMicrosoftJobs = internalAction({
         return { 
           status: "success", 
           jobsFound: jobsToSave.length, 
-          newJobs: newJobsCount,
+          newJobs: newJobs.length,
           totalAvailable: data.count 
         };
       }
@@ -91,7 +95,7 @@ export const saveMicrosoftJobs = internalMutation({
     ),
   },
   handler: async (ctx, args) => {
-    let newJobsCount = 0;
+    const newJobs: { title: string; link: string; location?: string }[] = [];
     for (const job of args.jobs) {
       const existing = await ctx.db
         .query("microsoftJobs")
@@ -100,11 +104,11 @@ export const saveMicrosoftJobs = internalMutation({
 
       if (!existing) {
         await ctx.db.insert("microsoftJobs", job);
-        newJobsCount++;
+        newJobs.push({ title: job.title, link: job.link, location: job.location });
         console.log(`New Microsoft Job found: ${job.title} - ${job.location}`);
       }
     }
-    return newJobsCount;
+    return newJobs;
   },
 });
 

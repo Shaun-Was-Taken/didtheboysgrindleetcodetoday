@@ -61,15 +61,19 @@ export const fetchGarminJobs = internalAction({
     }
 
     if (allRelevantJobs.length > 0) {
-      const newJobsCount: number = await ctx.runMutation(internal.garmin.saveGarminJobs, { jobs: allRelevantJobs });
+      const newJobs: { title: string; link: string; location?: string }[] = await ctx.runMutation(internal.garmin.saveGarminJobs, { jobs: allRelevantJobs });
       
-      if (newJobsCount > 0) {
-        console.log(`🎉 Found ${newJobsCount} NEW Garmin job(s)!`);
+      if (newJobs.length > 0) {
+        console.log(`🎉 Found ${newJobs.length} NEW Garmin job(s)!`);
+        await ctx.runAction(internal.email.sendNewJobsEmail, {
+          company: "Garmin",
+          jobs: newJobs,
+        });
       } else {
         console.log("✅ No new Garmin jobs (all jobs already tracked)");
       }
       
-      return { status: "success", jobsFound: allRelevantJobs.length, newJobs: newJobsCount, pagesScanned: page - 1 };
+      return { status: "success", jobsFound: allRelevantJobs.length, newJobs: newJobs.length, pagesScanned: page - 1 };
     }
     
     console.log("✅ No new Garmin jobs found");
@@ -90,7 +94,7 @@ export const saveGarminJobs = internalMutation({
     ),
   },
   handler: async (ctx, args) => {
-    let newJobsCount = 0;
+    const newJobs: { title: string; link: string; location?: string }[] = [];
     for (const job of args.jobs) {
       const existing = await ctx.db
         .query("garminJobs")
@@ -99,11 +103,11 @@ export const saveGarminJobs = internalMutation({
 
       if (!existing) {
         await ctx.db.insert("garminJobs", job);
-        newJobsCount++;
+        newJobs.push({ title: job.title, link: job.link, location: job.location });
         console.log(`New Garmin Job found: ${job.title} - ${job.link}`);
       }
     }
-    return newJobsCount;
+    return newJobs;
   },
 });
 

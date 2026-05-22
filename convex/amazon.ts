@@ -59,15 +59,19 @@ export const fetchAmazonJobs = internalAction({
       }));
 
       if (jobsToSave.length > 0) {
-        const newJobsCount: number = await ctx.runMutation(internal.amazon.saveAmazonJobs, { jobs: jobsToSave });
+        const newJobs: { title: string; link: string; location?: string }[] = await ctx.runMutation(internal.amazon.saveAmazonJobs, { jobs: jobsToSave });
         
-        if (newJobsCount > 0) {
-          console.log(`🎉 Found ${newJobsCount} NEW Amazon job(s)!`);
+        if (newJobs.length > 0) {
+          console.log(`🎉 Found ${newJobs.length} NEW Amazon job(s)!`);
+          await ctx.runAction(internal.email.sendNewJobsEmail, {
+            company: "Amazon",
+            jobs: newJobs,
+          });
         } else {
           console.log("✅ No new Amazon jobs (all jobs already tracked)");
         }
         
-        return { status: "success", jobsFound: jobsToSave.length, newJobs: newJobsCount };
+        return { status: "success", jobsFound: jobsToSave.length, newJobs: newJobs.length };
       }
 
       console.log("✅ No new Amazon jobs found");
@@ -92,7 +96,7 @@ export const saveAmazonJobs = internalMutation({
     ),
   },
   handler: async (ctx, args) => {
-    let newJobsCount = 0;
+    const newJobs: { title: string; link: string; location?: string }[] = [];
     for (const job of args.jobs) {
       const existing = await ctx.db
         .query("amazonJobs")
@@ -101,11 +105,11 @@ export const saveAmazonJobs = internalMutation({
 
       if (!existing) {
         await ctx.db.insert("amazonJobs", job);
-        newJobsCount++;
+        newJobs.push({ title: job.title, link: job.link, location: job.location });
         console.log(`New Amazon Job found: ${job.title} - ${job.link}`);
       }
     }
-    return newJobsCount;
+    return newJobs;
   },
 });
 

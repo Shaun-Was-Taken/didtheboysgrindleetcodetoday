@@ -16,6 +16,7 @@ import type {
 import type * as amazon from "../amazon.js";
 import type * as atlassian from "../atlassian.js";
 import type * as crons from "../crons.js";
+import type * as email from "../email.js";
 import type * as files from "../files.js";
 import type * as garmin from "../garmin.js";
 import type * as http from "../http.js";
@@ -36,6 +37,7 @@ declare const fullApi: ApiFromModules<{
   amazon: typeof amazon;
   atlassian: typeof atlassian;
   crons: typeof crons;
+  email: typeof email;
   files: typeof files;
   garmin: typeof garmin;
   http: typeof http;
