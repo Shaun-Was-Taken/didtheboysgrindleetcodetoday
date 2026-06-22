@@ -39,4 +39,34 @@ crons.interval(
   internal.tmobile.fetchTMobileJobs
 );
 
+crons.interval(
+  "nvidia-job-monitor",
+  { hours: 1 },
+  internal.nvidia.fetchNvidiaJobs
+);
+
+crons.interval(
+  "salesforce-job-monitor",
+  { hours: 1 },
+  internal.salesforce.fetchSalesforceJobs
+);
+
+crons.interval(
+  "stripe-job-monitor",
+  { hours: 1 },
+  internal.stripe_jobs.fetchStripeJobs
+);
+
+crons.interval(
+  "databricks-job-monitor",
+  { hours: 1 },
+  internal.databricks.fetchDatabricksJobs
+);
+
+crons.interval(
+  "google-job-monitor",
+  { hours: 1 },
+  internal.google.fetchGoogleJobsAction
+);
+
 export default crons;

@@ -16,6 +16,11 @@ import MicrosoftJobs from "./MicrosoftJobs";
 import AtlassianJobs from "./AtlassianJobs";
 import WellSkyJobs from "./WellSkyJobs";
 import TMobileJobs from "./TMobileJobs";
+import NvidiaJobs from "./NvidiaJobs";
+import SalesforceJobs from "./SalesforceJobs";
+import StripeJobs from "./StripeJobs";
+import DatabricksJobs from "./DatabricksJobs";
+import GoogleJobs from "./GoogleJobs";
 
 const HeroSection = () => {
   const { user, isSignedIn } = useUser();
@@ -61,6 +66,11 @@ const HeroSection = () => {
           <AtlassianJobs />
           <WellSkyJobs />
           <TMobileJobs />
+          <GoogleJobs />
+          <NvidiaJobs />
+          <SalesforceJobs />
+          <StripeJobs />
+          <DatabricksJobs />
         </div>
 
         <div className="mb-10">

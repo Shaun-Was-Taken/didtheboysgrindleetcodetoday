@@ -82,4 +82,44 @@ export default defineSchema({
     location: v.optional(v.string()),
     firstSeen: v.string(),
   }).index("by_jobId", ["jobId"]),
+
+  nvidiaJobs: defineTable({
+    jobId: v.string(), // Workday externalPath
+    title: v.string(),
+    link: v.string(),
+    location: v.optional(v.string()),
+    firstSeen: v.string(),
+  }).index("by_jobId", ["jobId"]),
+
+  salesforceJobs: defineTable({
+    jobId: v.string(), // Workday externalPath
+    title: v.string(),
+    link: v.string(),
+    location: v.optional(v.string()),
+    firstSeen: v.string(),
+  }).index("by_jobId", ["jobId"]),
+
+  stripeJobs: defineTable({
+    jobId: v.string(), // Greenhouse job id
+    title: v.string(),
+    link: v.string(),
+    location: v.optional(v.string()),
+    firstSeen: v.string(),
+  }).index("by_jobId", ["jobId"]),
+
+  databricksJobs: defineTable({
+    jobId: v.string(), // Greenhouse job id
+    title: v.string(),
+    link: v.string(),
+    location: v.optional(v.string()),
+    firstSeen: v.string(),
+  }).index("by_jobId", ["jobId"]),
+
+  googleJobs: defineTable({
+    jobId: v.string(), // Google careers job id
+    title: v.string(),
+    link: v.string(),
+    location: v.optional(v.string()),
+    firstSeen: v.string(),
+  }).index("by_jobId", ["jobId"]),
 });
