@@ -191,6 +191,139 @@ export async function fetchGoogleJobs(): Promise<FetchedJob[]> {
   return dedupe(jobs);
 }
 
+interface AshbyJob {
+  id: string;
+  title: string;
+  location?: string;
+  isListed?: boolean;
+  jobUrl: string;
+  address?: {
+    postalAddress?: {
+      addressRegion?: string;
+      addressCountry?: string;
+      addressLocality?: string;
+    };
+  };
+}
+
+/** Fetch US SWE postings from an Ashby-hosted job board (e.g. OpenAI). */
+export async function fetchAshbyJobs(board: string): Promise<FetchedJob[]> {
+  const res = await fetch(
+    `https://api.ashbyhq.com/posting-api/job-board/${board}`,
+    { headers: { Accept: "application/json" } }
+  );
+  if (!res.ok) {
+    console.error(`Ashby ${board} fetch failed: ${res.statusText}`);
+    return [];
+  }
+  const data = await res.json();
+  const all: AshbyJob[] = data.jobs || [];
+
+  const jobs: FetchedJob[] = [];
+  for (const j of all) {
+    if (j.isListed === false) continue;
+    if (!isSoftwareEngineer(j.title)) continue;
+    const addr = j.address?.postalAddress;
+    // Build a readable location, e.g. "San Francisco, California".
+    const location =
+      [addr?.addressLocality, addr?.addressRegion].filter(Boolean).join(", ") ||
+      j.location;
+    const isUs =
+      (addr?.addressCountry &&
+        /united states|usa/i.test(addr.addressCountry)) ||
+      isUsLocation(location);
+    if (!isUs) continue;
+    jobs.push({
+      jobId: j.id,
+      title: j.title,
+      link: j.jobUrl,
+      location,
+      firstSeen: new Date().toISOString(),
+    });
+  }
+
+  return dedupe(jobs);
+}
+
+interface AppleLocation {
+  name?: string;
+  city?: string;
+  stateProvince?: string;
+  countryName?: string;
+  countryID?: string;
+}
+
+interface ApplePosting {
+  positionId: string;
+  postingTitle: string;
+  transformedPostingTitle?: string;
+  locations?: AppleLocation[];
+}
+
+/**
+ * Fetch US SWE postings from Apple's careers site.
+ *
+ * Apple has no simple GET endpoint — its search is a POST to
+ * `jobs.apple.com/api/v1/search`. The free-text `query` field is ignored
+ * server-side, so instead we scope to the "Software and Services" team
+ * (`teamsAndSubTeams-SFTWR`), sort by newest, page through the most recent
+ * postings, and filter to Software Engineer titles in US locations in code.
+ */
+export async function fetchAppleJobs(): Promise<FetchedJob[]> {
+  const api = "https://jobs.apple.com/api/v1/search";
+  const jobs: FetchedJob[] = [];
+  const MAX_PAGES = 20; // 20/page → 400 newest Software & Services postings
+
+  for (let page = 1; page <= MAX_PAGES; page++) {
+    const res = await fetch(api, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        "User-Agent": "Mozilla/5.0",
+        Referer: "https://jobs.apple.com/en-us/search",
+      },
+      body: JSON.stringify({
+        query: "",
+        filters: { teams: [{ team: "teamsAndSubTeams-SFTWR" }] },
+        page,
+        locale: "en-us",
+        sort: "newest",
+        format: { longDate: "MMMM D, YYYY", mediumDate: "MMM D, YYYY" },
+      }),
+    });
+    if (!res.ok) {
+      console.error(`Apple fetch failed (page ${page}): ${res.statusText}`);
+      break;
+    }
+    const data = await res.json();
+    const postings: ApplePosting[] = data.res?.searchResults || [];
+    if (postings.length === 0) break;
+
+    for (const p of postings) {
+      const title = p.postingTitle || "Unknown Title";
+      if (!isSoftwareEngineer(title)) continue;
+      const locs = p.locations || [];
+      const isUs = locs.some(
+        (l) =>
+          /usa/i.test(l.countryID || "") ||
+          /united states/i.test(l.countryName || "")
+      );
+      if (!isUs) continue;
+      const slug = p.transformedPostingTitle || p.positionId;
+      jobs.push({
+        jobId: p.positionId,
+        title,
+        link: `https://jobs.apple.com/en-us/details/${p.positionId}/${slug}`,
+        location: locs.map((l) => l.name).filter(Boolean).join(" / "),
+        firstSeen: new Date().toISOString(),
+      });
+    }
+  }
+
+  return dedupe(jobs);
+}
+
 function dedupe(jobs: FetchedJob[]): FetchedJob[] {
   const seen = new Set<string>();
   return jobs.filter((j) => {

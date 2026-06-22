@@ -69,4 +69,22 @@ crons.interval(
   internal.google.fetchGoogleJobsAction
 );
 
+crons.interval(
+  "apple-job-monitor",
+  { hours: 1 },
+  internal.apple.fetchAppleJobsAction
+);
+
+crons.interval(
+  "openai-job-monitor",
+  { hours: 1 },
+  internal.openai.fetchOpenAIJobs
+);
+
+crons.interval(
+  "anthropic-job-monitor",
+  { hours: 1 },
+  internal.anthropic.fetchAnthropicJobs
+);
+
 export default crons;

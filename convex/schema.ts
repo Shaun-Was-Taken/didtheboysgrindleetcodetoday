@@ -122,4 +122,28 @@ export default defineSchema({
     location: v.optional(v.string()),
     firstSeen: v.string(),
   }).index("by_jobId", ["jobId"]),
+
+  appleJobs: defineTable({
+    jobId: v.string(), // Apple positionId
+    title: v.string(),
+    link: v.string(),
+    location: v.optional(v.string()),
+    firstSeen: v.string(),
+  }).index("by_jobId", ["jobId"]),
+
+  openaiJobs: defineTable({
+    jobId: v.string(), // Ashby job id
+    title: v.string(),
+    link: v.string(),
+    location: v.optional(v.string()),
+    firstSeen: v.string(),
+  }).index("by_jobId", ["jobId"]),
+
+  anthropicJobs: defineTable({
+    jobId: v.string(), // Greenhouse job id
+    title: v.string(),
+    link: v.string(),
+    location: v.optional(v.string()),
+    firstSeen: v.string(),
+  }).index("by_jobId", ["jobId"]),
 });

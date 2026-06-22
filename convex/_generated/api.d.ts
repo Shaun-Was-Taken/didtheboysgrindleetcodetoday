@@ -14,6 +14,8 @@ import type {
   FunctionReference,
 } from "convex/server";
 import type * as amazon from "../amazon.js";
+import type * as anthropic from "../anthropic.js";
+import type * as apple from "../apple.js";
 import type * as atlassian from "../atlassian.js";
 import type * as crons from "../crons.js";
 import type * as databricks from "../databricks.js";
@@ -26,6 +28,7 @@ import type * as jobFetchers from "../jobFetchers.js";
 import type * as leetcode from "../leetcode.js";
 import type * as microsoft from "../microsoft.js";
 import type * as nvidia from "../nvidia.js";
+import type * as openai from "../openai.js";
 import type * as salesforce from "../salesforce.js";
 import type * as stripe from "../stripe.js";
 import type * as stripe_jobs from "../stripe_jobs.js";
@@ -43,6 +46,8 @@ import type * as wellsky from "../wellsky.js";
  */
 declare const fullApi: ApiFromModules<{
   amazon: typeof amazon;
+  anthropic: typeof anthropic;
+  apple: typeof apple;
   atlassian: typeof atlassian;
   crons: typeof crons;
   databricks: typeof databricks;
@@ -55,6 +60,7 @@ declare const fullApi: ApiFromModules<{
   leetcode: typeof leetcode;
   microsoft: typeof microsoft;
   nvidia: typeof nvidia;
+  openai: typeof openai;
   salesforce: typeof salesforce;
   stripe: typeof stripe;
   stripe_jobs: typeof stripe_jobs;

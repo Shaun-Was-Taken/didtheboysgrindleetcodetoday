@@ -21,6 +21,9 @@ import SalesforceJobs from "./SalesforceJobs";
 import StripeJobs from "./StripeJobs";
 import DatabricksJobs from "./DatabricksJobs";
 import GoogleJobs from "./GoogleJobs";
+import AppleJobs from "./AppleJobs";
+import OpenAIJobs from "./OpenAIJobs";
+import AnthropicJobs from "./AnthropicJobs";
 
 const HeroSection = () => {
   const { user, isSignedIn } = useUser();
@@ -71,6 +74,9 @@ const HeroSection = () => {
           <SalesforceJobs />
           <StripeJobs />
           <DatabricksJobs />
+          <AppleJobs />
+          <OpenAIJobs />
+          <AnthropicJobs />
         </div>
 
         <div className="mb-10">
