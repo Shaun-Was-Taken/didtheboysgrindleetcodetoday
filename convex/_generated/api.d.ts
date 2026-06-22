@@ -24,6 +24,7 @@ import type * as leetcode from "../leetcode.js";
 import type * as microsoft from "../microsoft.js";
 import type * as stripe from "../stripe.js";
 import type * as user from "../user.js";
+import type * as wellsky from "../wellsky.js";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -45,6 +46,7 @@ declare const fullApi: ApiFromModules<{
   microsoft: typeof microsoft;
   stripe: typeof stripe;
   user: typeof user;
+  wellsky: typeof wellsky;
 }>;
 export declare const api: FilterApi<
   typeof fullApi,

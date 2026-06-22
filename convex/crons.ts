@@ -27,4 +27,10 @@ crons.interval(
   internal.atlassian.fetchAtlassianJobs
 );
 
+crons.interval(
+  "wellsky-job-monitor",
+  { hours: 1 },
+  internal.wellsky.fetchWellSkyJobs
+);
+
 export default crons;
