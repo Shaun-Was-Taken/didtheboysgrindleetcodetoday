@@ -23,13 +23,14 @@ interface JobBoardProps {
 }
 
 import { useState, useEffect } from "react";
-import { Search } from "lucide-react";
+import { Search, ChevronDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
 export default function JobBoard({ companyName, jobs, fetchInterval = "every hour", logoUrl, maxHeight = "max-h-[600px]" }: JobBoardProps) {
   const [imageError, setImageError] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredJobs, setFilteredJobs] = useState<Job[]>([]);
+  const [collapsed, setCollapsed] = useState(false);
 
   useEffect(() => {
     setImageError(false);
@@ -58,7 +59,7 @@ export default function JobBoard({ companyName, jobs, fetchInterval = "every hou
   }
 
   return (
-    <Card className="w-full max-w-2xl">
+    <Card className="w-full max-w-2xl self-start">
       <CardHeader>
         <div className="flex items-start justify-between mb-4">
           <div>
@@ -87,22 +88,36 @@ export default function JobBoard({ companyName, jobs, fetchInterval = "every hou
               <p className="text-sm text-muted-foreground">Fetching {fetchInterval}</p>
             </div>
           </div>
-          <Badge variant="secondary" className="text-sm">
-            {filteredJobs.length} {filteredJobs.length === 1 ? "job" : "jobs"}
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant="secondary" className="text-sm">
+              {filteredJobs.length} {filteredJobs.length === 1 ? "job" : "jobs"}
+            </Badge>
+            <button
+              type="button"
+              onClick={() => setCollapsed((c) => !c)}
+              aria-expanded={!collapsed}
+              aria-label={collapsed ? `Expand ${companyName} jobs` : `Collapse ${companyName} jobs`}
+              className="rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+            >
+              <ChevronDown className={`h-5 w-5 transition-transform ${collapsed ? "-rotate-90" : ""}`} />
+            </button>
+          </div>
         </div>
-        
-        <div className="relative">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            type="search"
-            placeholder="Search jobs..."
-            className="pl-9"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
+
+        {!collapsed && (
+          <div className="relative">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="search"
+              placeholder="Search jobs..."
+              className="pl-9"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+        )}
       </CardHeader>
+      {!collapsed && (
       <CardContent>
         {filteredJobs.length === 0 ? (
           <p className="text-muted-foreground text-center py-4">
@@ -142,6 +157,7 @@ export default function JobBoard({ companyName, jobs, fetchInterval = "every hou
           </div>
         )}
       </CardContent>
+      )}
     </Card>
   );
 }

@@ -33,4 +33,10 @@ crons.interval(
   internal.wellsky.fetchWellSkyJobs
 );
 
+crons.interval(
+  "tmobile-job-monitor",
+  { hours: 1 },
+  internal.tmobile.fetchTMobileJobs
+);
+
 export default crons;

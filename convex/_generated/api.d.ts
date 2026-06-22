@@ -23,6 +23,7 @@ import type * as http from "../http.js";
 import type * as leetcode from "../leetcode.js";
 import type * as microsoft from "../microsoft.js";
 import type * as stripe from "../stripe.js";
+import type * as tmobile from "../tmobile.js";
 import type * as user from "../user.js";
 import type * as wellsky from "../wellsky.js";
 
@@ -45,6 +46,7 @@ declare const fullApi: ApiFromModules<{
   leetcode: typeof leetcode;
   microsoft: typeof microsoft;
   stripe: typeof stripe;
+  tmobile: typeof tmobile;
   user: typeof user;
   wellsky: typeof wellsky;
 }>;

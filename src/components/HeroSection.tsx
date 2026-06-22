@@ -15,6 +15,7 @@ import AmazonJobs from "./AmazonJobs";
 import MicrosoftJobs from "./MicrosoftJobs";
 import AtlassianJobs from "./AtlassianJobs";
 import WellSkyJobs from "./WellSkyJobs";
+import TMobileJobs from "./TMobileJobs";
 
 const HeroSection = () => {
   const { user, isSignedIn } = useUser();
@@ -56,9 +57,10 @@ const HeroSection = () => {
           <MicrosoftJobs />
         </div>
 
-        <div className="grid gap-8 md:grid-cols-2 mb-10 max-w-5xl mx-auto">
+        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 mb-10 max-w-7xl mx-auto">
           <AtlassianJobs />
           <WellSkyJobs />
+          <TMobileJobs />
         </div>
 
         <div className="mb-10">
