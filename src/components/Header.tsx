@@ -34,6 +34,14 @@ const Header = () => {
                 Upload Progress
               </Link>
             )}
+            {isSignedIn && (
+              <Link
+                href="/groups"
+                className="text-sm font-medium hover:text-primary transition-colors"
+              >
+                Groups
+              </Link>
+            )}
             <Link
               href="/upgrade"
               className="text-sm font-medium hover:text-primary transition-colors"

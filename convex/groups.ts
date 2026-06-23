@@ -50,6 +50,17 @@ export const createGroup = mutation({
     if (!name) throw new ConvexError("Please enter a group name.");
     if (name.length > 40) throw new ConvexError("Group name is too long.");
 
+    // One group per owner: you must delete your existing group first.
+    const existingOwned = await ctx.db
+      .query("groups")
+      .withIndex("by_ownerId", (q) => q.eq("ownerId", clerkId))
+      .first();
+    if (existingOwned) {
+      throw new ConvexError(
+        "You can only own one group. Delete your current group to create a new one."
+      );
+    }
+
     // Generate a unique invite code (retry on the rare collision).
     let inviteCode = makeCode();
     for (let i = 0; i < 5; i++) {
