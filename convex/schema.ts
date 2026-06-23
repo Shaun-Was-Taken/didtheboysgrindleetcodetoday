@@ -146,4 +146,23 @@ export default defineSchema({
     location: v.optional(v.string()),
     firstSeen: v.string(),
   }).index("by_jobId", ["jobId"]),
+
+  // Friend groups for private LeetCode accountability leaderboards.
+  groups: defineTable({
+    name: v.string(),
+    ownerId: v.string(), // clerkId of the owner
+    inviteCode: v.string(),
+    createdAt: v.string(),
+  })
+    .index("by_ownerId", ["ownerId"])
+    .index("by_inviteCode", ["inviteCode"]),
+
+  groupMembers: defineTable({
+    groupId: v.id("groups"),
+    userId: v.string(), // clerkId
+    joinedAt: v.string(),
+  })
+    .index("by_group", ["groupId"])
+    .index("by_user", ["userId"])
+    .index("by_group_user", ["groupId", "userId"]),
 });

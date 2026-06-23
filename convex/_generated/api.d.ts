@@ -23,6 +23,7 @@ import type * as email from "../email.js";
 import type * as files from "../files.js";
 import type * as garmin from "../garmin.js";
 import type * as google from "../google.js";
+import type * as groups from "../groups.js";
 import type * as http from "../http.js";
 import type * as jobFetchers from "../jobFetchers.js";
 import type * as leetcode from "../leetcode.js";
@@ -55,6 +56,7 @@ declare const fullApi: ApiFromModules<{
   files: typeof files;
   garmin: typeof garmin;
   google: typeof google;
+  groups: typeof groups;
   http: typeof http;
   jobFetchers: typeof jobFetchers;
   leetcode: typeof leetcode;
