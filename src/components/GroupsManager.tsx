@@ -46,7 +46,7 @@ export default function GroupsManager() {
   const today = format(new Date(), "yyyy-MM-dd");
 
   const myGroups = useQuery(api.groups.getMyGroups, isSignedIn ? {} : "skip");
-  const ownsGroup = (myGroups ?? []).some((g) => g.isOwner);
+  const inAnyGroup = (myGroups ?? []).length > 0;
   const [selectedId, setSelectedId] = useState<Id<"groups"> | null>(null);
   const detail = useQuery(
     api.groups.getGroupDetail,
@@ -145,15 +145,24 @@ export default function GroupsManager() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setJoinOpen(true)}>
+          <Button
+            variant="outline"
+            onClick={() => setJoinOpen(true)}
+            disabled={inAnyGroup}
+            title={
+              inAnyGroup
+                ? "You're already in a group — leave it to join another."
+                : undefined
+            }
+          >
             <LogIn className="h-4 w-4" /> Join
           </Button>
           <Button
             onClick={() => setCreateOpen(true)}
-            disabled={ownsGroup}
+            disabled={inAnyGroup}
             title={
-              ownsGroup
-                ? "You already own a group — delete it to create a new one."
+              inAnyGroup
+                ? "You're already in a group — leave it to create your own."
                 : undefined
             }
           >

@@ -25,6 +25,7 @@ import type * as garmin from "../garmin.js";
 import type * as google from "../google.js";
 import type * as groups from "../groups.js";
 import type * as http from "../http.js";
+import type * as jobAlerts from "../jobAlerts.js";
 import type * as jobFetchers from "../jobFetchers.js";
 import type * as leetcode from "../leetcode.js";
 import type * as microsoft from "../microsoft.js";
@@ -58,6 +59,7 @@ declare const fullApi: ApiFromModules<{
   google: typeof google;
   groups: typeof groups;
   http: typeof http;
+  jobAlerts: typeof jobAlerts;
   jobFetchers: typeof jobFetchers;
   leetcode: typeof leetcode;
   microsoft: typeof microsoft;

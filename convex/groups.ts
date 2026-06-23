@@ -50,14 +50,15 @@ export const createGroup = mutation({
     if (!name) throw new ConvexError("Please enter a group name.");
     if (name.length > 40) throw new ConvexError("Group name is too long.");
 
-    // One group per owner: you must delete your existing group first.
-    const existingOwned = await ctx.db
-      .query("groups")
-      .withIndex("by_ownerId", (q) => q.eq("ownerId", clerkId))
+    // A user can only be in one group at a time. If they already belong to
+    // any group (owned or joined), they must leave it before creating one.
+    const existingMembership = await ctx.db
+      .query("groupMembers")
+      .withIndex("by_user", (q) => q.eq("userId", clerkId))
       .first();
-    if (existingOwned) {
+    if (existingMembership) {
       throw new ConvexError(
-        "You can only own one group. Delete your current group to create a new one."
+        "You're already in a group. Leave it before creating your own."
       );
     }
 
@@ -106,6 +107,17 @@ export const joinByCode = mutation({
       )
       .unique();
     if (already) return { groupId: group._id };
+
+    // One group at a time: reject if the user already belongs to another group.
+    const otherMembership = await ctx.db
+      .query("groupMembers")
+      .withIndex("by_user", (q) => q.eq("userId", clerkId))
+      .first();
+    if (otherMembership) {
+      throw new ConvexError(
+        "You're already in a group. Leave it before joining another."
+      );
+    }
 
     const members = await ctx.db
       .query("groupMembers")

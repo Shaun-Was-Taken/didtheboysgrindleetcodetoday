@@ -27,13 +27,11 @@ export const sendNewJobsEmail = internalAction({
       })
     ),
   },
-  handler: async (_ctx, args) => {
+  handler: async (ctx, args) => {
     const apiKey = process.env.RESEND_API_KEY;
-    const toEmail = process.env.NOTIFICATION_EMAIL;
-
-    if (!apiKey || !toEmail) {
+    if (!apiKey) {
       console.error(
-        "Missing environment variables. Set RESEND_API_KEY and NOTIFICATION_EMAIL in your Convex dashboard."
+        "Missing RESEND_API_KEY. Set it in your Convex dashboard."
       );
       return { status: "error", message: "Missing email configuration" };
     }
@@ -46,38 +44,72 @@ export const sendNewJobsEmail = internalAction({
     const subject = `🚀 ${args.jobs.length} New ${args.company} Job${args.jobs.length > 1 ? "s" : ""} Found!`;
     const htmlBody = buildEmailHtml(args.company, jobsWithCompany);
 
-    try {
-      const response = await fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          from: "Job Alerts <onboarding@resend.dev>",
-          to: [toEmail],
-          subject,
-          html: htmlBody,
-        }),
-      });
+    // Recipients: the owner inbox (if configured) + every Premium user who
+    // opted into this company's alerts. A Set dedupes overlaps.
+    const recipients = new Set<string>();
+    const ownerEmail = process.env.NOTIFICATION_EMAIL;
+    if (ownerEmail) recipients.add(ownerEmail);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error(`Resend API error (${response.status}):`, JSON.stringify(errorData));
-        return { status: "error", message: JSON.stringify(errorData) };
-      }
+    const subscribers: string[] = await ctx.runQuery(
+      internal.jobAlerts.getSubscribersForCompany,
+      { company: args.company }
+    );
+    for (const email of subscribers) recipients.add(email);
 
-      const result = await response.json();
-      console.log(
-        `📧 Email sent for ${args.jobs.length} new ${args.company} job(s): ${result.id}`
-      );
-      return { status: "success", messageId: result.id };
-    } catch (error) {
-      console.error("Error sending email via Resend:", error);
-      return { status: "error", message: String(error) };
+    if (recipients.size === 0) {
+      console.log("No alert recipients configured; skipping email.");
+      return { status: "success", sent: 0 };
     }
+
+    let sent = 0;
+    for (const to of recipients) {
+      const ok = await postEmail(apiKey, to, subject, htmlBody);
+      if (ok) sent++;
+    }
+    console.log(
+      `📧 Sent ${args.company} alert to ${sent}/${recipients.size} recipient(s).`
+    );
+    return { status: "success", sent };
   },
 });
+
+/** Send one alert email via Resend. Returns whether it succeeded. */
+async function postEmail(
+  apiKey: string,
+  to: string,
+  subject: string,
+  html: string
+): Promise<boolean> {
+  try {
+    const response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: "Job Alerts <onboarding@resend.dev>",
+        to: [to],
+        subject,
+        html,
+      }),
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error(
+        `Resend API error (${response.status}) for ${to}:`,
+        JSON.stringify(errorData)
+      );
+      return false;
+    }
+    const result = await response.json();
+    console.log(`📧 Email sent to ${to}: ${result.id}`);
+    return true;
+  } catch (error) {
+    console.error(`Error sending email to ${to} via Resend:`, error);
+    return false;
+  }
+}
 
 function buildEmailHtml(company: string, jobs: JobInfo[]): string {
   const jobRows = jobs
@@ -146,8 +178,11 @@ export const testEmailSending = internalAction({
   args: {},
   handler: async (ctx) => {
     console.log("🧪 Sending test email...");
-    const result: any = await ctx.runAction(
-      internal.email.sendNewJobsEmail,
+    // Explicit type breaks a circular inference cycle (this action calls
+    // sendNewJobsEmail, which lives in the same module).
+    const result: { status: string; message?: string; sent?: number } =
+      await ctx.runAction(
+        internal.email.sendNewJobsEmail,
       {
         company: "TestCompany",
         jobs: [

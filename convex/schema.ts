@@ -165,4 +165,14 @@ export default defineSchema({
     .index("by_group", ["groupId"])
     .index("by_user", ["userId"])
     .index("by_group_user", ["groupId", "userId"]),
+
+  // Premium-only per-company job alert subscriptions.
+  jobAlerts: defineTable({
+    userId: v.string(), // clerkId
+    company: v.string(), // display/company name, e.g. "Apple"
+    email: v.string(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_company", ["company"])
+    .index("by_user_company", ["userId", "company"]),
 });
