@@ -34,6 +34,12 @@ const Header = () => {
                 Upload Progress
               </Link>
             )}
+            <Link
+              href="/upgrade"
+              className="text-sm font-medium hover:text-primary transition-colors"
+            >
+              Upgrade
+            </Link>
           </nav>
 
           <ModeToggle />

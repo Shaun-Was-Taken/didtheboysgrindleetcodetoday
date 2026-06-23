@@ -67,7 +67,7 @@ const PricingCard = ({
         <Button
           onClick={onButtonClick}
           className="w-full cursor-pointer"
-          variant={isSubscription ? "outline" : "default"}
+          variant="default"
           disabled={isLoading}
         >
           {buttonText}

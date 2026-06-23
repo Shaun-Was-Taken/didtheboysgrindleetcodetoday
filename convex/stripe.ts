@@ -49,7 +49,7 @@ export const createOneTimeCheckoutSession = action({
 });
 
 export const createSubcriptionCheckoutSession = action({
-  args: { priceId: v.string() },
+  args: { priceId: v.string(), origin: v.optional(v.string()) },
   handler: async (ctx, args): Promise<{ url: string }> => {
     const identity = await ctx.auth.getUserIdentity();
 
@@ -65,6 +65,11 @@ export const createSubcriptionCheckoutSession = action({
       throw new ConvexError("User not found");
     }
 
+    // Where to send the user back after Stripe. The client passes its own
+    // origin; fall back to a configured app URL, then localhost for dev.
+    const origin =
+      args.origin ?? process.env.APP_URL ?? "http://localhost:3000";
+
     const checkoutSession = await stripe.checkout.sessions.create({
       customer: user.stripeCustomerID,
       line_items: [
@@ -74,8 +79,8 @@ export const createSubcriptionCheckoutSession = action({
         },
       ],
       mode: "subscription",
-      success_url: "http://localhost:3000",
-      cancel_url: "http://localhost:3000",
+      success_url: `${origin}/upgrade?success=1`,
+      cancel_url: `${origin}/upgrade?canceled=1`,
       payment_method_types: ["card"],
       metadata: {
         userId: user._id,
@@ -93,7 +98,7 @@ export const createSubcriptionCheckoutSession = action({
 
 export const billingPortal = action({
   args: {},
-  handler: async (ctx, args) => {
+  handler: async (ctx) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
       throw new ConvexError("Unauthorized");
