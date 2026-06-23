@@ -6,15 +6,16 @@ import { format } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
-import { CheckCircle, XCircle } from "lucide-react";
+import { CheckCircle, XCircle, Users } from "lucide-react";
+import Link from "next/link";
 
 const DAILY_GOAL = 2;
 
 export default function DailyLeaderboard() {
   const todayDate = format(new Date(), "yyyy-MM-dd");
 
-  // Fetch daily completions for today
-  const dailyCompletions = useQuery(api.leetcode.getDailyCompletions, {
+  // Leaderboard scoped to the signed-in user: their group, or just them.
+  const board = useQuery(api.groups.getDailyLeaderboard, {
     date: todayDate,
   });
 
@@ -29,9 +30,26 @@ export default function DailyLeaderboard() {
   };
 
   // Sort users by completion count (descending)
-  const sortedCompletions = dailyCompletions
-    ? [...dailyCompletions].sort((a, b) => b.count - a.count)
+  const sortedCompletions = board
+    ? [...board.entries].sort((a, b) => b.count - a.count)
     : [];
+
+  const subtitle =
+    board?.scope === "group" ? (
+      <span className="inline-flex items-center gap-1">
+        <Users className="h-3.5 w-3.5" /> {board.groupName}
+      </span>
+    ) : board?.scope === "self" ? (
+      <>
+        Just you —{" "}
+        <Link href="/groups" className="text-primary hover:underline">
+          join a group
+        </Link>{" "}
+        to compete with friends.
+      </>
+    ) : board?.scope === "signedOut" ? (
+      "Sign in to track your grind."
+    ) : null;
 
   return (
     <Card className="w-full">
@@ -42,11 +60,16 @@ export default function DailyLeaderboard() {
         <p className="text-sm text-muted-foreground">
           Goal: Complete {DAILY_GOAL} LeetCode problems today.
         </p>
+        {subtitle && (
+          <p className="text-sm text-muted-foreground">{subtitle}</p>
+        )}
       </CardHeader>
       <CardContent>
-        {sortedCompletions.length === 0 && (
+        {board && sortedCompletions.length === 0 && (
           <p className="text-center text-muted-foreground py-4">
-            No submissions recorded for today yet.
+            {board.scope === "signedOut"
+              ? "Sign in to see your group's grind."
+              : "No submissions recorded for today yet."}
           </p>
         )}
         <ul className="space-y-4">

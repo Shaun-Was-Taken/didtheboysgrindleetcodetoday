@@ -34,8 +34,8 @@ const HeroSection = () => {
     isSignedIn && user?.id ? { clerkId: user.id } : "skip"
   );
 
-  // Get all users from submissions
-  const allUsers = useQuery(api.leetcode.getAllUsers) || [];
+  // Heatmaps scoped to the signed-in user's group (or just themselves).
+  const allUsers = useQuery(api.groups.getMyCircleUserIds) || [];
   return (
     <section className="py-10 md:py-16 lg:py-20 px-4 sm:px-6 md:px-12">
       <div className="container mx-auto max-w-6xl text-center animate-fade-in">

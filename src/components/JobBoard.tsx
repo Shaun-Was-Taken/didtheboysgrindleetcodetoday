@@ -3,6 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
+import JobAlertBell from "./JobAlertBell";
 
 interface Job {
   _id: string;
@@ -89,6 +90,7 @@ export default function JobBoard({ companyName, jobs, fetchInterval = "every hou
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <JobAlertBell company={companyName} />
             <Badge variant="secondary" className="text-sm">
               {filteredJobs.length} {filteredJobs.length === 1 ? "job" : "jobs"}
             </Badge>

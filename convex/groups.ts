@@ -239,6 +239,93 @@ export const getMyGroups = query({
   },
 });
 
+/**
+ * The home-page "Today's Grind" board, scoped to the signed-in user:
+ *  - in a group  → that group's members
+ *  - no group    → just themselves
+ *  - signed out  → empty
+ */
+export const getDailyLeaderboard = query({
+  args: { date: v.string() },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      return { scope: "signedOut" as const, groupName: null, entries: [] };
+    }
+    const clerkId = identity.subject;
+
+    const membership = await ctx.db
+      .query("groupMembers")
+      .withIndex("by_user", (q) => q.eq("userId", clerkId))
+      .first();
+
+    let memberIds: string[];
+    let scope: "group" | "self";
+    let groupName: string | null = null;
+
+    if (membership) {
+      const group = await ctx.db.get(membership.groupId);
+      const rows = await ctx.db
+        .query("groupMembers")
+        .withIndex("by_group", (q) => q.eq("groupId", membership.groupId))
+        .collect();
+      memberIds = rows.map((r) => r.userId);
+      scope = "group";
+      groupName = group?.name ?? null;
+    } else {
+      memberIds = [clerkId];
+      scope = "self";
+    }
+
+    const entries = [];
+    for (const uid of memberIds) {
+      const user = await ctx.db
+        .query("users")
+        .withIndex("by_clerkId", (q) => q.eq("clerkId", uid))
+        .unique();
+      const completion = await ctx.db
+        .query("dailyCompletions")
+        .withIndex("by_user_date", (q) =>
+          q.eq("userId", uid).eq("date", args.date)
+        )
+        .unique();
+      entries.push({
+        userId: uid,
+        userName: user?.name ?? "User",
+        userImage: user?.imageUrl ?? "",
+        count: completion?.count ?? 0,
+      });
+    }
+
+    return { scope, groupName, entries };
+  },
+});
+
+/**
+ * clerkIds whose heatmaps the home page should show, scoped to the signed-in
+ * user: their group's members, or just themselves. Empty when signed out.
+ */
+export const getMyCircleUserIds = query({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return [];
+    const clerkId = identity.subject;
+
+    const membership = await ctx.db
+      .query("groupMembers")
+      .withIndex("by_user", (q) => q.eq("userId", clerkId))
+      .first();
+    if (!membership) return [clerkId];
+
+    const rows = await ctx.db
+      .query("groupMembers")
+      .withIndex("by_group", (q) => q.eq("groupId", membership.groupId))
+      .collect();
+    return rows.map((r) => r.userId);
+  },
+});
+
 export const getGroupDetail = query({
   args: { groupId: v.id("groups"), date: v.string() },
   handler: async (ctx, args) => {
