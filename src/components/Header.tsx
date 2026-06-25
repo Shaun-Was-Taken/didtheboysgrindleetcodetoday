@@ -42,6 +42,14 @@ const Header = () => {
                 Groups
               </Link>
             )}
+            {isSignedIn && (
+              <Link
+                href="/jobs"
+                className="text-sm font-medium hover:text-primary transition-colors"
+              >
+                Jobs
+              </Link>
+            )}
             <Link
               href="/upgrade"
               className="text-sm font-medium hover:text-primary transition-colors"

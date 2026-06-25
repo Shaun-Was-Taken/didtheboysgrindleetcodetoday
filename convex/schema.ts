@@ -147,6 +147,14 @@ export default defineSchema({
     firstSeen: v.string(),
   }).index("by_jobId", ["jobId"]),
 
+  oppdJobs: defineTable({
+    jobId: v.string(), // PeopleSoft JobOpeningId
+    title: v.string(),
+    link: v.string(),
+    location: v.optional(v.string()),
+    firstSeen: v.string(),
+  }).index("by_jobId", ["jobId"]),
+
   // Friend groups for private LeetCode accountability leaderboards.
   groups: defineTable({
     name: v.string(),

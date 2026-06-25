@@ -87,4 +87,10 @@ crons.interval(
   internal.anthropic.fetchAnthropicJobs
 );
 
+crons.interval(
+  "oppd-job-monitor",
+  { hours: 1 },
+  internal.oppd.fetchOppdJobs
+);
+
 export default crons;

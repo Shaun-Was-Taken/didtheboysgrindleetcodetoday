@@ -31,6 +31,7 @@ import type * as leetcode from "../leetcode.js";
 import type * as microsoft from "../microsoft.js";
 import type * as nvidia from "../nvidia.js";
 import type * as openai from "../openai.js";
+import type * as oppd from "../oppd.js";
 import type * as salesforce from "../salesforce.js";
 import type * as stripe from "../stripe.js";
 import type * as stripe_jobs from "../stripe_jobs.js";
@@ -65,6 +66,7 @@ declare const fullApi: ApiFromModules<{
   microsoft: typeof microsoft;
   nvidia: typeof nvidia;
   openai: typeof openai;
+  oppd: typeof oppd;
   salesforce: typeof salesforce;
   stripe: typeof stripe;
   stripe_jobs: typeof stripe_jobs;
