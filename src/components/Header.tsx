@@ -13,8 +13,10 @@ const Header = () => {
     <header className="py-6 px-6 md:px-12 w-full">
       <div className="container mx-auto flex justify-between items-center">
         <Link href={"/"} className="flex items-center gap-2">
-          <div className="font-bold text-xl">LeetCode Tracker</div>
-          <div className="text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300 px-2 py-0.5 rounded-full">
+          <div className="font-display font-semibold text-xl tracking-tight">
+            LeetCode Tracker
+          </div>
+          <div className="text-xs bg-accent text-accent-foreground px-2.5 py-0.5 rounded-full font-medium">
             Grind
           </div>
         </Link>

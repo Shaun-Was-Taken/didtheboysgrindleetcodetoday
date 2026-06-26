@@ -6,8 +6,9 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-nunito), var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-fraunces), Georgia, serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -67,72 +68,83 @@
 }
 
 :root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  /* Lamplit Desk — warm paper, espresso ink, sage + honey */
+  --radius: 0.85rem;
+  --background: oklch(0.971 0.011 78);
+  --foreground: oklch(0.288 0.022 52);
+  --card: oklch(0.991 0.007 84);
+  --card-foreground: oklch(0.288 0.022 52);
+  --popover: oklch(0.991 0.007 84);
+  --popover-foreground: oklch(0.288 0.022 52);
+  --primary: oklch(0.508 0.073 152);
+  --primary-foreground: oklch(0.985 0.012 84);
+  --secondary: oklch(0.929 0.018 76);
+  --secondary-foreground: oklch(0.33 0.025 52);
+  --muted: oklch(0.936 0.015 76);
+  --muted-foreground: oklch(0.518 0.022 58);
+  --accent: oklch(0.892 0.046 76);
+  --accent-foreground: oklch(0.34 0.04 56);
+  --destructive: oklch(0.553 0.15 32);
+  --border: oklch(0.884 0.016 72);
+  --input: oklch(0.9 0.016 72);
+  --ring: oklch(0.508 0.073 152);
+  --chart-1: oklch(0.508 0.073 152);
+  --chart-2: oklch(0.74 0.09 76);
+  --chart-3: oklch(0.6 0.11 40);
+  --chart-4: oklch(0.62 0.06 200);
+  --chart-5: oklch(0.66 0.085 152);
+  --sidebar: oklch(0.96 0.013 78);
+  --sidebar-foreground: oklch(0.288 0.022 52);
+  --sidebar-primary: oklch(0.508 0.073 152);
+  --sidebar-primary-foreground: oklch(0.985 0.012 84);
+  --sidebar-accent: oklch(0.892 0.046 76);
+  --sidebar-accent-foreground: oklch(0.34 0.04 56);
+  --sidebar-border: oklch(0.884 0.016 72);
+  --sidebar-ring: oklch(0.508 0.073 152);
+  /* heatmap "grind" ramp + ambient glow */
+  --grind-1: oklch(0.83 0.058 150);
+  --grind-2: oklch(0.66 0.082 152);
+  --grind-3: oklch(0.5 0.09 153);
+  --bg-glow: oklch(0.9 0.05 78 / 0.55);
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  /* Dim Study — warm dim room for late-night grinding */
+  --background: oklch(0.206 0.012 58);
+  --foreground: oklch(0.915 0.014 80);
+  --card: oklch(0.246 0.014 58);
+  --card-foreground: oklch(0.915 0.014 80);
+  --popover: oklch(0.246 0.014 58);
+  --popover-foreground: oklch(0.915 0.014 80);
+  --primary: oklch(0.665 0.085 150);
+  --primary-foreground: oklch(0.19 0.025 150);
+  --secondary: oklch(0.295 0.016 58);
+  --secondary-foreground: oklch(0.915 0.014 80);
+  --muted: oklch(0.295 0.016 58);
+  --muted-foreground: oklch(0.708 0.018 76);
+  --accent: oklch(0.37 0.04 72);
+  --accent-foreground: oklch(0.93 0.02 80);
+  --destructive: oklch(0.62 0.16 30);
+  --border: oklch(0.92 0.02 80 / 12%);
+  --input: oklch(0.92 0.02 80 / 15%);
+  --ring: oklch(0.665 0.085 150);
+  --chart-1: oklch(0.665 0.085 150);
+  --chart-2: oklch(0.78 0.1 78);
+  --chart-3: oklch(0.66 0.12 40);
+  --chart-4: oklch(0.68 0.07 200);
+  --chart-5: oklch(0.55 0.08 152);
+  --sidebar: oklch(0.235 0.013 58);
+  --sidebar-foreground: oklch(0.915 0.014 80);
+  --sidebar-primary: oklch(0.665 0.085 150);
+  --sidebar-primary-foreground: oklch(0.19 0.025 150);
+  --sidebar-accent: oklch(0.37 0.04 72);
+  --sidebar-accent-foreground: oklch(0.93 0.02 80);
+  --sidebar-border: oklch(0.92 0.02 80 / 12%);
+  --sidebar-ring: oklch(0.665 0.085 150);
+  --grind-1: oklch(0.46 0.07 152);
+  --grind-2: oklch(0.6 0.085 151);
+  --grind-3: oklch(0.74 0.1 150);
+  --bg-glow: oklch(0.5 0.06 80 / 0.18);
 }
 
 @layer base {
@@ -141,6 +153,20 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-sans);
+    /* soft lamplight pooling from the top */
+    background-image: radial-gradient(
+      ellipse 90% 55% at 50% -8%,
+      var(--bg-glow),
+      transparent 62%
+    );
+    background-attachment: fixed;
+  }
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    letter-spacing: -0.01em;
   }
 }
 
@@ -149,19 +175,29 @@
   @apply w-full overflow-hidden;
 }
 
-.react-calendar-heatmap rect:not(.color-empty) {
-  rx: 2;
-  ry: 2;
+.react-calendar-heatmap rect {
+  rx: 2.5;
+  ry: 2.5;
 }
 
 .react-calendar-heatmap text {
   @apply fill-muted-foreground text-xs font-medium;
 }
 
-.react-calendar-heatmap .fill-muted {
-  @apply fill-secondary;
+/* warm "grind" ramp — sage to moss on warm tan */
+.react-calendar-heatmap .fill-muted,
+.fill-muted {
+  fill: var(--secondary);
 }
-
-.dark .react-calendar-heatmap .fill-muted {
-  @apply fill-muted;
+.react-calendar-heatmap .fill-grind-1,
+.fill-grind-1 {
+  fill: var(--grind-1);
+}
+.react-calendar-heatmap .fill-grind-2,
+.fill-grind-2 {
+  fill: var(--grind-2);
+}
+.react-calendar-heatmap .fill-grind-3,
+.fill-grind-3 {
+  fill: var(--grind-3);
 }

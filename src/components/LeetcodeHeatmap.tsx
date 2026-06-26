@@ -98,9 +98,9 @@ export default function LeetcodeHeatmap() {
     value: CalendarHeatmap.ReactCalendarHeatmapValue<string> | undefined
   ) => {
     if (!value || !value.count || value.count === 0) return "fill-muted";
-    if (value.count === 1) return "fill-green-300";
-    if (value.count === 2) return "fill-green-500";
-    return "fill-green-700";
+    if (value.count === 1) return "fill-grind-1";
+    if (value.count === 2) return "fill-grind-2";
+    return "fill-grind-3";
   };
 
   // Helper to get badge color based on difficulty
@@ -183,10 +183,10 @@ export default function LeetcodeHeatmap() {
 
       <div className="flex items-center justify-end mt-2 text-sm text-muted-foreground">
         <span className="mr-1">Less</span>
-        <div className="w-3 h-3 rounded fill-muted mr-1"></div>
-        <div className="w-3 h-3 rounded fill-green-300 mr-1"></div>
-        <div className="w-3 h-3 rounded fill-green-500 mr-1"></div>
-        <div className="w-3 h-3 rounded fill-green-700 mr-1"></div>
+        <div className="w-3 h-3 rounded-[3px] bg-secondary mr-1"></div>
+        <div className="w-3 h-3 rounded-[3px] bg-[var(--grind-1)] mr-1"></div>
+        <div className="w-3 h-3 rounded-[3px] bg-[var(--grind-2)] mr-1"></div>
+        <div className="w-3 h-3 rounded-[3px] bg-[var(--grind-3)] mr-1"></div>
         <span>More</span>
       </div>
     </div>

@@ -27,7 +27,7 @@ import { useState, useEffect } from "react";
 import { Search, ChevronDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
-export default function JobBoard({ companyName, jobs, fetchInterval = "every hour", logoUrl, maxHeight = "max-h-[600px]" }: JobBoardProps) {
+export default function JobBoard({ companyName, jobs, fetchInterval = "every hour", logoUrl, maxHeight = "max-h-[400px]" }: JobBoardProps) {
   const [imageError, setImageError] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredJobs, setFilteredJobs] = useState<Job[]>([]);
@@ -128,8 +128,12 @@ export default function JobBoard({ companyName, jobs, fetchInterval = "every hou
         ) : (
           <div className={`space-y-3 ${maxHeight} overflow-y-auto pr-2`}>
             {filteredJobs.map((job) => (
-              <Card key={job.jobId} className="hover:shadow-md transition-shadow border-l-4 border-l-primary">
-                <CardContent className="p-4">
+              <Card key={job.jobId} className="relative overflow-hidden hover:shadow-md transition-shadow">
+                <span
+                  aria-hidden
+                  className="absolute inset-y-0 left-0 w-1.5 bg-primary"
+                />
+                <CardContent className="p-4 pl-5">
                   <div className="flex flex-col gap-2">
                     <h3 className="font-semibold text-base leading-tight" title={job.title}>
                       {job.title}

@@ -122,9 +122,9 @@ export default function UserHeatmapCard({
   ) => {
     if (!value?.count || value.count === 0) return "fill-muted cursor-default"; // Add cursor-default for empty cells
     // Add cursor-pointer for clickable cells
-    if (value.count === 1) return "fill-green-300 cursor-pointer";
-    if (value.count === 2) return "fill-green-500 cursor-pointer";
-    return "fill-green-700 cursor-pointer";
+    if (value.count === 1) return "fill-grind-1 cursor-pointer";
+    if (value.count === 2) return "fill-grind-2 cursor-pointer";
+    return "fill-grind-3 cursor-pointer";
   };
 
   // Helper to get badge color based on difficulty
