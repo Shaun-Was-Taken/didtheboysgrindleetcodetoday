@@ -121,13 +121,16 @@ export default function GroupsManager() {
 
   if (!isSignedIn) {
     return (
-      <div className="text-center rounded-lg border border-dashed p-10">
-        <Users className="mx-auto h-8 w-8 text-muted-foreground mb-3" />
-        <p className="text-muted-foreground mb-4">
-          Sign in to create friend groups and compete on private leaderboards.
+      <div className="mx-auto max-w-md rounded-2xl border border-dashed p-10 text-center">
+        <span className="mx-auto mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-accent text-primary shadow-sm ring-1 ring-border">
+          <Users className="h-7 w-7" />
+        </span>
+        <p className="mb-4 text-muted-foreground">
+          Sign in to start a crew and keep each other honest on a private
+          leaderboard.
         </p>
         <SignInButton mode="modal">
-          <Button className="rounded-full">Sign In</Button>
+          <Button className="rounded-full">Sign in</Button>
         </SignInButton>
       </div>
     );
@@ -135,13 +138,18 @@ export default function GroupsManager() {
 
   return (
     <div className="space-y-8">
-      {/* Actions */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      {/* Header */}
+      <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Your Groups</h1>
-          <p className="text-sm text-muted-foreground">
-            Keep your crew accountable. Free groups hold 3 members — Premium up
-            to 15.
+          <p className="font-mono text-xs font-medium tracking-[0.18em] text-muted-foreground">
+            ACCOUNTABILITY
+          </p>
+          <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight md:text-4xl">
+            Your crew
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Keep each other honest. Free groups hold 3 members — Premium up to
+            15.
           </p>
         </div>
         <div className="flex gap-2">
@@ -175,9 +183,14 @@ export default function GroupsManager() {
       {myGroups === undefined ? (
         <p className="text-muted-foreground">Loading groups…</p>
       ) : myGroups.length === 0 ? (
-        <div className="text-center rounded-lg border border-dashed p-10">
-          <p className="text-muted-foreground">
-            No groups yet. Create one and share the invite code with friends.
+        <div className="rounded-2xl border border-dashed p-10 text-center">
+          <span className="mx-auto mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-accent text-primary ring-1 ring-border">
+            <Users className="h-6 w-6" />
+          </span>
+          <p className="font-display text-lg font-medium">No crew yet</p>
+          <p className="mx-auto mt-1 max-w-sm text-sm text-muted-foreground">
+            Create a group and share the invite code, or join one with a code a
+            friend sent you.
           </p>
         </div>
       ) : (
@@ -302,7 +315,17 @@ export default function GroupsManager() {
                   key={m.userId}
                   className="flex items-center gap-3 py-3"
                 >
-                  <span className="w-6 text-center text-sm font-semibold text-muted-foreground">
+                  <span
+                    className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-sm font-semibold ${
+                      i === 0
+                        ? "bg-accent text-accent-foreground"
+                        : i === 1
+                          ? "bg-secondary text-secondary-foreground"
+                          : i === 2
+                            ? "bg-primary/15 text-primary"
+                            : "text-muted-foreground"
+                    }`}
+                  >
                     {i + 1}
                   </span>
                   <Avatar className="h-9 w-9">

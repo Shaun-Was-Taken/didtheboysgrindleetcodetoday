@@ -159,7 +159,7 @@ export default function UserHeatmapCard({
   };
 
   return (
-    <Card className="w-full overflow-hidden">
+    <Card className="w-full overflow-hidden transition-shadow hover:shadow-md">
       <CardHeader className="pb-0">
         <div className="flex items-center gap-3">
           <Avatar className="h-10 w-10 border border-muted">
