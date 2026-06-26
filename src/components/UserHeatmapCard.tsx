@@ -9,6 +9,7 @@ import CalendarHeatmap from "react-calendar-heatmap";
 import { format, parseISO, eachDayOfInterval } from "date-fns";
 import "react-calendar-heatmap/dist/styles.css";
 import { useState } from "react";
+import { Check } from "lucide-react";
 import { Badge } from "./ui/badge";
 import {
   Dialog,
@@ -24,7 +25,7 @@ type SubmissionData = CalendarHeatmap.ReactCalendarHeatmapValue<string> & {
   submissions: {
     problemTitle: string;
     difficulty?: string;
-    screenshotUrl: string;
+    screenshotUrl?: string;
   }[];
 };
 
@@ -231,19 +232,26 @@ export default function UserHeatmapCard({
                               </Badge>
                             )}
                           </div>
-                          <Image
-                            src={sub.screenshotUrl}
-                            alt={`Screenshot for ${sub.problemTitle}`}
-                            width={400}
-                            height={200}
-                            className="rounded-md border object-contain w-full h-auto"
-                            unoptimized
-                            onError={(e) => {
-                              const imgElement = e.target as HTMLImageElement;
-                              imgElement.src =
-                                "https://via.placeholder.com/400x200?text=Error+Loading+Image";
-                            }}
-                          />
+                          {sub.screenshotUrl ? (
+                            <Image
+                              src={sub.screenshotUrl}
+                              alt={`Screenshot for ${sub.problemTitle}`}
+                              width={400}
+                              height={200}
+                              className="rounded-md border object-contain w-full h-auto"
+                              unoptimized
+                              onError={(e) => {
+                                const imgElement = e.target as HTMLImageElement;
+                                imgElement.src =
+                                  "https://via.placeholder.com/400x200?text=Error+Loading+Image";
+                              }}
+                            />
+                          ) : (
+                            <div className="flex items-center gap-2 rounded-md border border-dashed px-3 py-2 text-xs text-muted-foreground">
+                              <Check className="h-3.5 w-3.5 text-primary" />
+                              Synced from LeetCode
+                            </div>
+                          )}
                         </li>
                       ))}
                     </ul>

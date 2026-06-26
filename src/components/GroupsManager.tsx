@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { useUser, SignInButton } from "@clerk/nextjs";
-import { format } from "date-fns";
+import { todayStr } from "@/lib/today";
 import {
   Users,
   Plus,
@@ -43,7 +43,7 @@ function errMessage(e: unknown): string {
 
 export default function GroupsManager() {
   const { isSignedIn } = useUser();
-  const today = format(new Date(), "yyyy-MM-dd");
+  const today = todayStr();
 
   const myGroups = useQuery(api.groups.getMyGroups, isSignedIn ? {} : "skip");
   const inAnyGroup = (myGroups ?? []).length > 0;

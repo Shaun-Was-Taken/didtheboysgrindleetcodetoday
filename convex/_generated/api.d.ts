@@ -28,6 +28,8 @@ import type * as http from "../http.js";
 import type * as jobAlerts from "../jobAlerts.js";
 import type * as jobFetchers from "../jobFetchers.js";
 import type * as leetcode from "../leetcode.js";
+import type * as leetcodeSync from "../leetcodeSync.js";
+import type * as leetcodeSyncNode from "../leetcodeSyncNode.js";
 import type * as microsoft from "../microsoft.js";
 import type * as nvidia from "../nvidia.js";
 import type * as openai from "../openai.js";
@@ -63,6 +65,8 @@ declare const fullApi: ApiFromModules<{
   jobAlerts: typeof jobAlerts;
   jobFetchers: typeof jobFetchers;
   leetcode: typeof leetcode;
+  leetcodeSync: typeof leetcodeSync;
+  leetcodeSyncNode: typeof leetcodeSyncNode;
   microsoft: typeof microsoft;
   nvidia: typeof nvidia;
   openai: typeof openai;

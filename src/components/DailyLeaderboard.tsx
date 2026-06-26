@@ -3,6 +3,7 @@
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { format } from "date-fns";
+import { todayStr } from "@/lib/today";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
@@ -12,7 +13,7 @@ import Link from "next/link";
 const DAILY_GOAL = 2;
 
 export default function DailyLeaderboard() {
-  const todayDate = format(new Date(), "yyyy-MM-dd");
+  const todayDate = todayStr();
 
   // Leaderboard scoped to the signed-in user: their group, or just them.
   const board = useQuery(api.groups.getDailyLeaderboard, {

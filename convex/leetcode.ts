@@ -6,7 +6,7 @@ export const addSubmission = mutation({
     userId: v.string(),
     problemTitle: v.string(),
     submissionDate: v.string(),
-    screenshotUrl: v.string(),
+    screenshotUrl: v.optional(v.string()),
     difficulty: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
@@ -16,6 +16,7 @@ export const addSubmission = mutation({
       submissionDate: args.submissionDate,
       screenshotUrl: args.screenshotUrl,
       difficulty: args.difficulty,
+      source: "screenshot",
     });
 
     // Update daily completion count

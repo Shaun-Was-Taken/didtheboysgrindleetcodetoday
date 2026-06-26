@@ -12,20 +12,37 @@ export default defineSchema({
     stripeSubscriptionID: v.string(),
     stripeSubscriptionStatus: v.string(),
     imageUrl: v.string(),
+    // LeetCode auto-sync (Phase 1): poll the public API for this username.
+    leetcodeUsername: v.optional(v.string()),
+    leetcodeVerified: v.optional(v.boolean()), // ownership proven (fast-follow)
+    lastLeetcodeSyncAt: v.optional(v.number()), // unix ms heartbeat
   })
     .index("by_clerkId", ["clerkId"])
     .index("by_email", ["email"])
-    .index("by_stripe_customer_id", ["stripeCustomerID"]),
+    .index("by_stripe_customer_id", ["stripeCustomerID"])
+    .index("by_leetcodeUsername", ["leetcodeUsername"]),
 
   leetcodeSubmissions: defineTable({
     userId: v.string(),
     problemTitle: v.string(),
     submissionDate: v.string(),
-    screenshotUrl: v.string(),
+    screenshotUrl: v.optional(v.string()), // optional: synced solves have no image
     difficulty: v.optional(v.string()),
+    titleSlug: v.optional(v.string()),
+    source: v.optional(v.string()), // "leetcode" | "screenshot"
+    externalId: v.optional(v.string()), // LeetCode submission id (dedupe key)
   })
     .index("by_userId", ["userId"])
-    .index("by_date", ["submissionDate"]),
+    .index("by_date", ["submissionDate"])
+    .index("by_user_externalId", ["userId", "externalId"])
+    .index("by_user_slug_date", ["userId", "titleSlug", "submissionDate"]),
+
+  // Cache of slug -> difficulty so we don't re-fetch the LeetCode API per solve.
+  leetcodeProblems: defineTable({
+    titleSlug: v.string(),
+    title: v.string(),
+    difficulty: v.string(),
+  }).index("by_slug", ["titleSlug"]),
 
   dailyCompletions: defineTable({
     userId: v.string(),

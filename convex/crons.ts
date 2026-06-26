@@ -93,4 +93,11 @@ crons.interval(
   internal.oppd.fetchOppdJobs
 );
 
+// Pull each linked user's recent accepted LeetCode solves.
+crons.interval(
+  "leetcode-sync",
+  { minutes: 15 },
+  internal.leetcodeSyncNode.syncAllUsers
+);
+
 export default crons;

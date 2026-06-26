@@ -1,14 +1,22 @@
 import SubmissionForm from "@/components/SubmissionForm";
-import SubmissionGallery from "@/components/SubmissionGallery";
+import ConnectLeetcode from "@/components/ConnectLeetcode";
 import { Card } from "@/components/ui/card";
 
 export default function UploadPage() {
   return (
     <div className="min-h-screen py-10 px-4">
       <div className="container mx-auto max-w-6xl">
-        <h1 className="text-3xl font-bold mb-8 text-center">
-          Upload Your LeetCode Progress
+        <h1 className="text-3xl font-bold mb-3 text-center">
+          Track Your LeetCode Progress
         </h1>
+        <p className="mx-auto mb-8 max-w-xl text-center text-muted-foreground">
+          Connect your username for automatic syncing, or upload a screenshot
+          manually.
+        </p>
+
+        <div className="mx-auto mb-8 max-w-2xl">
+          <ConnectLeetcode />
+        </div>
 
         <div className="flex flex-col md:flex-row justify-between w-full gap-6">
           <div className="flex-1">
@@ -30,10 +38,6 @@ export default function UploadPage() {
               </ul>
             </Card>
           </div>
-        </div>
-
-        <div className="w-full mt-10">
-          <SubmissionGallery />
         </div>
       </div>
     </div>

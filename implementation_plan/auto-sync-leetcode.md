@@ -1,5 +1,35 @@
 # Auto-syncing LeetCode / NeetCode solves (no screenshots)
 
+> **STATUS — Phase 1 DEPLOYED & LIVE (verified).** Deployed via `npx convex dev`
+> and confirmed working end-to-end: linked username `subatQ` on `/upload`, the
+> immediate sync pulled recent accepted solves, and a fresh Two Sum solve
+> (2026-06-26) landed on the heatmap with today's goal ticking up. The 15-min
+> cron keeps it current.
+>
+> Decisions locked: unique problems/day, `America/Chicago` timezone,
+> validation-now-verify-later (no ownership proof yet).
+>
+> **Files added:** `convex/leetcodeSync.ts`, `convex/leetcodeSyncNode.ts`,
+> `src/lib/today.ts`, `src/components/ConnectLeetcode.tsx`.
+> **Modified:** `convex/schema.ts`, `convex/crons.ts`, `convex/leetcode.ts`,
+> `src/hooks/useLeetcodeStats.ts`,
+> `src/components/{DailyLeaderboard,GroupsManager,UserHeatmapCard}.tsx`,
+> `src/app/upload/page.tsx`.
+> **Removed:** `src/components/SubmissionGallery.tsx` — the "Your Recent
+> Submissions" grid rendered one `<Image>` per submission (200+ after sync), a
+> heavy load; deleted entirely. The home-page heatmaps (lightweight SVG) remain
+> the canonical visualization of solves.
+>
+> **Known behavior / not-yet-done (see Phase 2 + edge cases below):**
+> - New solves appear on the **next ≤15-min cron tick**, not instantly. Real-time
+>   needs the Phase 2 browser extension.
+> - **NeetCode editor solves are not captured** (no API; separate judge).
+> - **No ownership verification yet** — anyone can claim a public username.
+> - Public LeetCode profile required (private "recent submissions" → empty sync).
+> - Manual screenshot upload retained as a fallback on `/upload`.
+
+
+
 **Goal:** when a user solves a problem on leetcode.com (and, ideally, neetcode.io),
 their heatmap + daily goal update automatically — no screenshot upload.
 
@@ -321,15 +351,19 @@ extension to build, publish, and get users to install. Hence: Phase 2.
 
 ---
 
-## Suggested rollout order
+## Rollout order — Phase 1 status
 
-1. Schema: add username fields, make `screenshotUrl` optional, add dedupe index.
-2. Username capture + `matchedUser` validation UI.
-3. `leetcodeSync.ts` (action + `usersToSync` query + `ingest` mutation) + difficulty
-   cache + cron. Manually trigger once to validate end-to-end.
-4. Update `UserHeatmapCard` day dialog to handle screenshot-less rows.
-5. Pick + wire the canonical timezone across server sync and client "today."
-6. (Later) Phase 2 extension + `httpAction` ingest endpoint for NeetCode + realtime.
+1. ✅ Schema: username fields, `screenshotUrl` optional, dedupe + slug/date indexes,
+   `leetcodeProblems` cache.
+2. ✅ Username capture + `matchedUser` validation (`ConnectLeetcode` on `/upload`).
+3. ✅ `leetcodeSync.ts` + `leetcodeSyncNode.ts` (action + `usersToSync` + `ingest` +
+   difficulty cache) + 15-min cron. Validated end-to-end.
+4. ✅ `UserHeatmapCard` day dialog handles screenshot-less rows ("Synced from
+   LeetCode"). `SubmissionGallery` removed entirely (compute).
+5. ✅ Canonical timezone (`America/Chicago`) wired across server sync (`unixToDate`)
+   and client "today" (`src/lib/today.ts`, used by hook + leaderboard + groups).
+6. ⬜ **Phase 2 (later):** browser extension + `httpAction` ingest endpoint for
+   NeetCode coverage + real-time. Plus the fast-follow "Verified ✓" ownership check.
 
 ---
 
