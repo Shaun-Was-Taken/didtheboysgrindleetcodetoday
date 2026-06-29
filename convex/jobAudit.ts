@@ -1,0 +1,250 @@
+import { internalAction } from "./_generated/server";
+import { isSoftwareEngineer, looksSoftwareish } from "./jobFetchers";
+
+// Periodic filter audit.
+//
+// Every fetcher narrows a fuzzy source result-set down to software roles via the
+// shared `isSoftwareEngineer` predicate. If a company titles its roles in a way
+// the predicate doesn't expect (e.g. Garmin's "Software Engineer 1/2"-only or
+// T-Mobile's inverted "Engineer, Software"), real postings get dropped silently.
+//
+// This action re-fetches each keyword source's RAW titles, applies the predicate,
+// and reports any "suspicious drops" — titles that look software-ish
+// (`looksSoftwareish`) but the predicate rejected. A non-empty list is the early
+// warning that a filter has gone too narrow; check the logs / return value.
+
+const BROWSER_UA =
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36";
+
+async function rawWorkdayTitles(opts: {
+  tenant: string;
+  host: string;
+  site: string;
+  appliedFacets?: Record<string, string[]>;
+  maxPages?: number;
+}): Promise<string[]> {
+  const { tenant, host, site, appliedFacets = {}, maxPages = 10 } = opts;
+  const api = `https://${tenant}.${host}.myworkdayjobs.com/wday/cxs/${tenant}/${site}/jobs`;
+  const titles: string[] = [];
+  let offset = 0;
+  const limit = 20;
+  for (let page = 0; page < maxPages; page++) {
+    const res = await fetch(api, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({
+        appliedFacets,
+        limit,
+        offset,
+        searchText: "Software Engineer",
+      }),
+    });
+    if (!res.ok) break;
+    const data = await res.json();
+    const postings = data.jobPostings || [];
+    if (postings.length === 0) break;
+    for (const p of postings) titles.push(p.title || "");
+    offset += limit;
+    if (offset >= (data.total ?? 0)) break;
+  }
+  return titles;
+}
+
+async function rawGreenhouseTitles(board: string): Promise<string[]> {
+  const res = await fetch(
+    `https://boards-api.greenhouse.io/v1/boards/${board}/jobs`,
+    { headers: { Accept: "application/json" } }
+  );
+  if (!res.ok) return [];
+  const data = await res.json();
+  return (data.jobs || []).map((j: { title: string }) => j.title || "");
+}
+
+async function rawGarminTitles(maxPages = 10): Promise<string[]> {
+  const titles: string[] = [];
+  for (let page = 1; page <= maxPages; page++) {
+    const res = await fetch(
+      `https://careers.garmin.com/api/jobs?keywords=Software%20Engineer&sortBy=relevance&page=${page}`
+    );
+    if (!res.ok) break;
+    const data = await res.json();
+    const jobs = data.jobs || [];
+    if (jobs.length === 0) break;
+    for (const j of jobs) titles.push((j.data && j.data.title) || "");
+  }
+  return titles;
+}
+
+async function rawAtlassianTitles(): Promise<string[]> {
+  const res = await fetch(
+    "https://www.atlassian.com/endpoint/careers/listings",
+    { headers: { Accept: "application/json" } }
+  );
+  if (!res.ok) return [];
+  const jobs = await res.json();
+  return (jobs || []).map((j: { title: string }) => j.title || "");
+}
+
+async function rawGMTitles(maxPages = 3): Promise<string[]> {
+  const titles: string[] = [];
+  for (let page = 1; page <= maxPages; page++) {
+    const url = `https://search-careers.gm.com/en/jobs/?search=software+engineer&country=United+States+of+America&pagesize=50&page=${page}`;
+    const res = await fetch(url, {
+      headers: { "User-Agent": BROWSER_UA, Accept: "text/html" },
+    });
+    if (!res.ok) break;
+    const html = await res.text();
+    const matches = [
+      ...html.matchAll(
+        /<a class="stretched-link" href="\/en\/jobs\/jr-\d+\/[^"]*"\s*>([\s\S]*?)<\/a>/gi
+      ),
+    ];
+    if (matches.length === 0) break;
+    for (const m of matches) {
+      titles.push(
+        m[1].replace(/<[^>]*>/g, "").replace(/&amp;/g, "&").replace(/\s+/g, " ").trim()
+      );
+    }
+  }
+  return titles;
+}
+
+async function rawHRBlockTitles(maxPages = 3): Promise<string[]> {
+  const titles: string[] = [];
+  for (let page = 0; page < maxPages; page++) {
+    const url = `https://careers-hrblock.icims.com/jobs/search?ss=1&searchKeyword=software+engineer&pr=${page}&in_iframe=1`;
+    const res = await fetch(url, {
+      headers: { "User-Agent": BROWSER_UA, Accept: "text/html" },
+    });
+    if (!res.ok) break;
+    const html = await res.text();
+    const matches = [...html.matchAll(/<h3[^>]*>\s*([\s\S]*?)<\/h3>/gi)];
+    if (matches.length === 0) break;
+    for (const m of matches) {
+      titles.push(m[1].replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim());
+    }
+  }
+  return titles;
+}
+
+// Each source yields its RAW (pre-filter) candidate titles.
+const SOURCES: { company: string; getTitles: () => Promise<string[]> }[] = [
+  { company: "Garmin", getTitles: () => rawGarminTitles() },
+  {
+    company: "T-Mobile",
+    getTitles: () =>
+      rawWorkdayTitles({ tenant: "tmobile", host: "wd1", site: "External" }),
+  },
+  {
+    company: "NVIDIA",
+    getTitles: () =>
+      rawWorkdayTitles({
+        tenant: "nvidia",
+        host: "wd5",
+        site: "NVIDIAExternalCareerSite",
+        appliedFacets: { locationHierarchy1: ["2fcb99c455831013ea52fb338f2932d8"] },
+      }),
+  },
+  {
+    company: "Salesforce",
+    getTitles: () =>
+      rawWorkdayTitles({
+        tenant: "salesforce",
+        host: "wd12",
+        site: "External_Career_Site",
+        appliedFacets: {
+          "CF_-_REC_-_LRV_-_Job_Posting_Anchor_-_Country_from_Job_Posting_Location_Extended":
+            ["bc33aa3152ec42d4995f4791a106ed09"],
+        },
+      }),
+  },
+  {
+    company: "WellSky",
+    getTitles: () =>
+      rawWorkdayTitles({ tenant: "wellsky", host: "wd1", site: "WellSkyCareers" }),
+  },
+  {
+    company: "Netsmart",
+    getTitles: () =>
+      rawWorkdayTitles({
+        tenant: "ntst",
+        host: "wd1",
+        site: "Careers",
+        appliedFacets: {
+          locations: [
+            "d5ce43d260f1019c84e96ea1c8c74f78",
+            "7d657dc447c4105a4a48b01fadf82acc",
+          ],
+        },
+      }),
+  },
+  { company: "Stripe", getTitles: () => rawGreenhouseTitles("stripe") },
+  { company: "Databricks", getTitles: () => rawGreenhouseTitles("databricks") },
+  { company: "Anthropic", getTitles: () => rawGreenhouseTitles("anthropic") },
+  { company: "Atlassian", getTitles: () => rawAtlassianTitles() },
+  { company: "GM", getTitles: () => rawGMTitles() },
+  { company: "H&R Block", getTitles: () => rawHRBlockTitles() },
+];
+
+export const auditFilters = internalAction({
+  args: {},
+  handler: async () => {
+    console.log("🔎 Running job-filter audit...");
+
+    const report: {
+      company: string;
+      raw: number;
+      kept: number;
+      suspiciousDrops: string[];
+      error?: string;
+    }[] = [];
+
+    for (const src of SOURCES) {
+      try {
+        const titles = await src.getTitles();
+        const kept = titles.filter((t) => isSoftwareEngineer(t));
+        // Software-ish titles the predicate rejected → likely missed postings.
+        const suspicious = [
+          ...new Set(
+            titles.filter((t) => looksSoftwareish(t) && !isSoftwareEngineer(t))
+          ),
+        ];
+        report.push({
+          company: src.company,
+          raw: titles.length,
+          kept: kept.length,
+          suspiciousDrops: suspicious,
+        });
+
+        const line = `  ${src.company}: ${titles.length} raw → ${kept.length} kept`;
+        if (suspicious.length > 0) {
+          console.warn(
+            `⚠️ ${line} — ${suspicious.length} suspicious drop(s): ${suspicious
+              .slice(0, 15)
+              .join(" | ")}`
+          );
+        } else {
+          console.log(`✅ ${line}`);
+        }
+      } catch (error) {
+        console.error(`❌ ${src.company} audit failed:`, error);
+        report.push({
+          company: src.company,
+          raw: 0,
+          kept: 0,
+          suspiciousDrops: [],
+          error: String(error),
+        });
+      }
+    }
+
+    const flagged = report.filter((r) => r.suspiciousDrops.length > 0);
+    console.log(
+      `🔎 Audit complete. ${flagged.length} compan${
+        flagged.length === 1 ? "y" : "ies"
+      } with suspicious drops.`
+    );
+
+    return { flaggedCount: flagged.length, report };
+  },
+});

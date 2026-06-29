@@ -28,6 +28,7 @@ import type * as groups from "../groups.js";
 import type * as hrblock from "../hrblock.js";
 import type * as http from "../http.js";
 import type * as jobAlerts from "../jobAlerts.js";
+import type * as jobAudit from "../jobAudit.js";
 import type * as jobFetchers from "../jobFetchers.js";
 import type * as leetcode from "../leetcode.js";
 import type * as leetcodeSync from "../leetcodeSync.js";
@@ -68,6 +69,7 @@ declare const fullApi: ApiFromModules<{
   hrblock: typeof hrblock;
   http: typeof http;
   jobAlerts: typeof jobAlerts;
+  jobAudit: typeof jobAudit;
   jobFetchers: typeof jobFetchers;
   leetcode: typeof leetcode;
   leetcodeSync: typeof leetcodeSync;

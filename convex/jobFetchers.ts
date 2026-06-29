@@ -29,9 +29,28 @@ const US_STATE_NAMES = [
   "washington", "west virginia", "wisconsin", "wyoming",
 ];
 
+// Canonical "is this a software role?" check, shared by every fetcher so the
+// filter can't drift company-to-company. Covers the common spellings plus the
+// inverted naming some boards use (e.g. T-Mobile's "Engineer, Software").
 export function isSoftwareEngineer(title: string): boolean {
+  const t = title
+    .toLowerCase()
+    .replace(/&nbsp;|&#160;| /g, " ") // normalize non-breaking spaces
+    .replace(/\s+/g, " ");
+  return (
+    /\bsoftware\b.*\bengineer/.test(t) || // "Software [Frontend/Security/…] Engineer"
+    t.includes("developer") ||
+    /\bengineers?,\s*software/.test(t) // inverted: "Engineer, Software"
+  );
+}
+
+// Looser "smells like a software role" signal, used only by the filter audit to
+// flag titles that mention software/dev but were dropped by isSoftwareEngineer —
+// i.e. likely-missed postings worth a human look (how the Garmin/T-Mobile
+// over-narrow filters would have been caught automatically).
+export function looksSoftwareish(title: string): boolean {
   const t = title.toLowerCase();
-  return t.includes("software engineer") || t.includes("developer");
+  return t.includes("software") || t.includes("developer") || /\bsde\b/.test(t);
 }
 
 // True when a free-text location string looks like a US location (or US remote).

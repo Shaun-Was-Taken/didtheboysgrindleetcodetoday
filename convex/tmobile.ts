@@ -1,6 +1,7 @@
 import { internalAction, internalMutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
+import { isSoftwareEngineer } from "./jobFetchers";
 
 // T-Mobile uses Workday. Job listings come from the Workday CXS API.
 const WORKDAY_TENANT = "tmobile";
@@ -63,13 +64,11 @@ export const fetchTMobileJobs = internalAction({
 
         for (const posting of postings) {
           const title = posting.title || "Unknown Title";
-          const titleLower = title.toLowerCase();
 
-          // Keep only actual software engineering roles (the keyword search is fuzzy).
-          const isSoftwareEngineer =
-            titleLower.includes("software engineer") ||
-            titleLower.includes("developer");
-          if (!isSoftwareEngineer) continue;
+          // Keep only actual software engineering roles (the keyword search is
+          // fuzzy). The shared predicate also handles T-Mobile's inverted naming
+          // ("Engineer, Software"), which the old check silently dropped.
+          if (!isSoftwareEngineer(title)) continue;
 
           allRelevantJobs.push({
             jobId: posting.externalPath, // unique canonical path

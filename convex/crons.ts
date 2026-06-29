@@ -111,6 +111,14 @@ crons.interval(
   internal.gm.fetchGMJobs
 );
 
+// Daily audit: flag fetchers whose title filter is silently dropping
+// software-ish postings (see convex/jobAudit.ts).
+crons.interval(
+  "job-filter-audit",
+  { hours: 24 },
+  internal.jobAudit.auditFilters
+);
+
 // Pull each linked user's recent accepted LeetCode solves.
 crons.interval(
   "leetcode-sync",

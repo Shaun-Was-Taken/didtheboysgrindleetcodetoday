@@ -1,6 +1,7 @@
 import { internalAction, internalMutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
+import { isSoftwareEngineer } from "./jobFetchers";
 
 export const fetchGarminJobs = internalAction({
   args: {},
@@ -34,11 +35,10 @@ export const fetchGarminJobs = internalAction({
           
           if (!jobId) continue;
 
-          const titleLower = title.toLowerCase();
-          // Keep all software engineering roles, matching the app-wide convention.
+          // Keep all software engineering roles via the shared predicate.
           // (Previously this only matched "software engineer 1"/"2", silently
           // dropping seniors, leads, language-specific, and unnumbered roles.)
-          if (titleLower.includes("software engineer") || titleLower.includes("developer")) {
+          if (isSoftwareEngineer(title)) {
              const slug = jobData.slug || jobId;
              const link = `https://careers.garmin.com/careers/jobs/${slug}`;
              const location = jobData.locations && jobData.locations.length > 0 ? jobData.locations[0] : undefined;

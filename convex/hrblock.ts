@@ -1,6 +1,7 @@
 import { internalAction, internalMutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
+import { isSoftwareEngineer } from "./jobFetchers";
 
 // H&R Block runs its careers portal on iCIMS (careers-hrblock.icims.com). There's
 // no clean JSON API, so we hit the public job-search page and parse the results
@@ -21,11 +22,6 @@ function decodeEntities(s: string): string {
     .replace(/&#?\w+;/g, " ")
     .replace(/\s+/g, " ")
     .trim();
-}
-
-function isSoftwareEngineer(title: string): boolean {
-  const t = title.toLowerCase();
-  return t.includes("software engineer") || t.includes("developer");
 }
 
 // iCIMS locations look like "US-MO-Remote" / "US-MO-Kansas City" for US roles.

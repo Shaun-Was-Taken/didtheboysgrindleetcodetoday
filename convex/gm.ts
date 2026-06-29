@@ -1,6 +1,7 @@
 import { internalAction, internalMutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
+import { isSoftwareEngineer } from "./jobFetchers";
 
 // GM's careers site (search-careers.gm.com) is fully server-rendered: each
 // `?page=N&pagesize=50` request returns the job cards as HTML. It's fronted by
@@ -16,11 +17,6 @@ const BROWSER_HEADERS = {
   Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
   "Accept-Language": "en-US,en;q=0.9",
 };
-
-function isSoftwareEngineer(title: string): boolean {
-  const t = title.toLowerCase();
-  return t.includes("software engineer") || t.includes("developer");
-}
 
 interface ParsedJob {
   jobId: string;

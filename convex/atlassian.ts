@@ -1,6 +1,7 @@
 import { internalAction, internalMutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
+import { isSoftwareEngineer } from "./jobFetchers";
 
 interface AtlassianJob {
   id: number;
@@ -25,20 +26,17 @@ export const fetchAtlassianJobs = internalAction({
       const jobs: AtlassianJob[] = await response.json();
 
       const filteredJobs = jobs.filter((job) => {
-        const title = job.title.toLowerCase();
-        const locations = job.locations.join(" ").toLowerCase();
         const category = job.category.toLowerCase();
 
-        const isSoftwareEngineer = title.includes("software engineer") || title.includes("developer");
         const isEngineering = category.includes("engineering");
-        
+
         // Check if any location is strictly US or Remote
         const isUSOrRemote = job.locations.some(loc => {
           const l = loc.toLowerCase();
           return l.includes("united states") || l.includes("remote") || l === "us" || l.includes("usa");
         });
 
-        return (isSoftwareEngineer || isEngineering) && isUSOrRemote;
+        return (isSoftwareEngineer(job.title) || isEngineering) && isUSOrRemote;
       });
 
       // Deduplicate jobs by ID
