@@ -172,6 +172,30 @@ export default defineSchema({
     firstSeen: v.string(),
   }).index("by_jobId", ["jobId"]),
 
+  hrblockJobs: defineTable({
+    jobId: v.string(), // iCIMS numeric job id
+    title: v.string(),
+    link: v.string(),
+    location: v.optional(v.string()),
+    firstSeen: v.string(),
+  }).index("by_jobId", ["jobId"]),
+
+  netsmartJobs: defineTable({
+    jobId: v.string(), // Workday externalPath
+    title: v.string(),
+    link: v.string(),
+    location: v.optional(v.string()),
+    firstSeen: v.string(),
+  }).index("by_jobId", ["jobId"]),
+
+  gmJobs: defineTable({
+    jobId: v.string(), // GM careers req id (jr-XXXXXXXXX)
+    title: v.string(),
+    link: v.string(),
+    location: v.optional(v.string()),
+    firstSeen: v.string(),
+  }).index("by_jobId", ["jobId"]),
+
   // Friend groups for private LeetCode accountability leaderboards.
   groups: defineTable({
     name: v.string(),

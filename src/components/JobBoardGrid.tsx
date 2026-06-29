@@ -15,6 +15,9 @@ import AppleJobs from "./AppleJobs";
 import OpenAIJobs from "./OpenAIJobs";
 import AnthropicJobs from "./AnthropicJobs";
 import OppdJobs from "./OppdJobs";
+import HRBlockJobs from "./HRBlockJobs";
+import NetsmartJobs from "./NetsmartJobs";
+import GMJobs from "./GMJobs";
 
 export default function JobBoardGrid() {
   return (
@@ -34,6 +37,9 @@ export default function JobBoardGrid() {
       <OpenAIJobs />
       <AnthropicJobs />
       <OppdJobs />
+      <HRBlockJobs />
+      <NetsmartJobs />
+      <GMJobs />
     </div>
   );
 }

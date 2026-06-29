@@ -1,15 +1,8 @@
 "use client";
 
 import { SignInButton } from "@clerk/nextjs";
-import {
-  Code,
-  Flame,
-  Zap,
-  Users,
-  Briefcase,
-  Check,
-  ArrowRight,
-} from "lucide-react";
+import { Code, Flame, Zap, Users, Check, ArrowRight } from "lucide-react";
+import JobsSection from "./JobsSection";
 import { AuroraText } from "@/components/magicui/aurora-text";
 import { SparklesText } from "./magicui/sparkles-text";
 import { Button } from "./ui/button";
@@ -72,11 +65,6 @@ const REASONS = [
     icon: Users,
     title: "Keep the boys honest",
     body: "A private group leaderboard. Everyone sees who showed up today, so nobody quietly falls off.",
-  },
-  {
-    icon: Briefcase,
-    title: "Jobs, auto-tracked",
-    body: "Fresh new-grad and software roles from 15 top companies, refreshed every hour.",
   },
 ];
 
@@ -218,7 +206,7 @@ export default function LandingPage() {
             Solo grinding fizzles out. This makes it a group habit you actually
             keep.
           </p>
-          <div className="grid gap-5 sm:grid-cols-2">
+          <div className="grid gap-5 sm:grid-cols-3">
             {REASONS.map((r) => (
               <Card key={r.title} className="p-6">
                 <span className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-accent text-primary">
@@ -234,6 +222,9 @@ export default function LandingPage() {
             ))}
           </div>
         </section>
+
+        {/* JOBS — auto-tracked, free */}
+        <JobsSection />
 
         {/* HOW IT WORKS */}
         <section>

@@ -93,6 +93,24 @@ crons.interval(
   internal.oppd.fetchOppdJobs
 );
 
+crons.interval(
+  "hrblock-job-monitor",
+  { hours: 1 },
+  internal.hrblock.fetchHRBlockJobs
+);
+
+crons.interval(
+  "netsmart-job-monitor",
+  { hours: 1 },
+  internal.netsmart.fetchNetsmartJobs
+);
+
+crons.interval(
+  "gm-job-monitor",
+  { hours: 1 },
+  internal.gm.fetchGMJobs
+);
+
 // Pull each linked user's recent accepted LeetCode solves.
 crons.interval(
   "leetcode-sync",

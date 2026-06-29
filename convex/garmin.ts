@@ -35,7 +35,10 @@ export const fetchGarminJobs = internalAction({
           if (!jobId) continue;
 
           const titleLower = title.toLowerCase();
-          if (titleLower.includes("software engineer 1") || titleLower.includes("software engineer 2")) {
+          // Keep all software engineering roles, matching the app-wide convention.
+          // (Previously this only matched "software engineer 1"/"2", silently
+          // dropping seniors, leads, language-specific, and unnumbered roles.)
+          if (titleLower.includes("software engineer") || titleLower.includes("developer")) {
              const slug = jobData.slug || jobId;
              const link = `https://careers.garmin.com/careers/jobs/${slug}`;
              const location = jobData.locations && jobData.locations.length > 0 ? jobData.locations[0] : undefined;
