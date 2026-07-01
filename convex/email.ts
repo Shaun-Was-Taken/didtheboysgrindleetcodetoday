@@ -41,8 +41,9 @@ export const sendNewJobsEmail = internalAction({
       company: args.company,
     }));
 
-    const subject = `🚀 ${args.jobs.length} New ${args.company} Job${args.jobs.length > 1 ? "s" : ""} Found!`;
+    const subject = `${args.jobs.length} new ${args.company} job${args.jobs.length > 1 ? "s" : ""} posted`;
     const htmlBody = buildEmailHtml(args.company, jobsWithCompany);
+    const textBody = buildEmailText(args.company, jobsWithCompany);
 
     // Recipients: the owner inbox (if configured) + every Premium user who
     // opted into this company's alerts. A Set dedupes overlaps.
@@ -63,7 +64,7 @@ export const sendNewJobsEmail = internalAction({
 
     let sent = 0;
     for (const to of recipients) {
-      const ok = await postEmail(apiKey, to, subject, htmlBody);
+      const ok = await postEmail(apiKey, to, subject, htmlBody, textBody);
       if (ok) sent++;
     }
     console.log(
@@ -78,8 +79,12 @@ async function postEmail(
   apiKey: string,
   to: string,
   subject: string,
-  html: string
+  html: string,
+  text: string
 ): Promise<boolean> {
+  // One-click unsubscribe mailto — required by Gmail/Yahoo for bulk senders and
+  // a strong deliverability signal that keeps alerts out of spam.
+  const unsubscribe = "mailto:unsubscribe@send.didtheboysgrindleetcodetoday.com";
   try {
     const response = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -88,10 +93,15 @@ async function postEmail(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "Job Alerts <onboarding@resend.dev>",
+        from: "Job Alerts <alerts@send.didtheboysgrindleetcodetoday.com>",
         to: [to],
         subject,
         html,
+        text,
+        headers: {
+          "List-Unsubscribe": `<${unsubscribe}>`,
+          "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+        },
       }),
     });
     if (!response.ok) {
@@ -168,6 +178,26 @@ function buildEmailHtml(company: string, jobs: JobInfo[]): string {
   </div>
 </body>
 </html>`;
+}
+
+/** Plain-text counterpart to the HTML email. A text/plain part paired with the
+ *  HTML makes the message multipart/alternative, which spam filters trust far
+ *  more than HTML-only mail. */
+function buildEmailText(company: string, jobs: JobInfo[]): string {
+  const lines = jobs.map((job) => {
+    const loc = job.location ? ` (${job.location})` : "";
+    return `- ${job.title}${loc}\n  Apply: ${job.link}`;
+  });
+
+  return [
+    `${jobs.length} new ${company} job${jobs.length > 1 ? "s" : ""} posted`,
+    "",
+    ...lines,
+    "",
+    "—",
+    "Sent by your Job Monitor. Auto-generated alert.",
+    "Unsubscribe: unsubscribe@send.didtheboysgrindleetcodetoday.com",
+  ].join("\n");
 }
 
 /**
