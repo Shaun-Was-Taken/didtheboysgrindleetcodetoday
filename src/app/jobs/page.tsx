@@ -3,6 +3,7 @@
 import { useUser, SignInButton } from "@clerk/nextjs";
 import { Briefcase } from "lucide-react";
 import JobBoardGrid from "@/components/JobBoardGrid";
+import ManageAlertsDialog from "@/components/ManageAlertsDialog";
 import { Button } from "@/components/ui/button";
 
 export default function JobsPage() {
@@ -31,6 +32,11 @@ export default function JobsPage() {
             New-grad &amp; software engineer roles, auto-tracked across 15 top
             companies — so you never miss a fresh posting.
           </p>
+          {isSignedIn && (
+            <div className="mt-5 flex justify-center">
+              <ManageAlertsDialog />
+            </div>
+          )}
         </div>
 
         {!isLoaded ? (

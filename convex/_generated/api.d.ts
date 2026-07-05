@@ -17,6 +17,7 @@ import type * as amazon from "../amazon.js";
 import type * as anthropic from "../anthropic.js";
 import type * as apple from "../apple.js";
 import type * as atlassian from "../atlassian.js";
+import type * as companies from "../companies.js";
 import type * as crons from "../crons.js";
 import type * as databricks from "../databricks.js";
 import type * as email from "../email.js";
@@ -58,6 +59,7 @@ declare const fullApi: ApiFromModules<{
   anthropic: typeof anthropic;
   apple: typeof apple;
   atlassian: typeof atlassian;
+  companies: typeof companies;
   crons: typeof crons;
   databricks: typeof databricks;
   email: typeof email;

@@ -120,6 +120,29 @@ export const addCredit = internalMutation({
   },
 });
 
+/**
+ * Dev/testing helper: force a user's subscription status by email, bypassing
+ * Stripe. Internal-only, so it can only be run from the CLI or dashboard:
+ *   npx convex run user:devSetSubscriptionStatus '{"email":"x@y.com","status":"active"}'
+ */
+export const devSetSubscriptionStatus = internalMutation({
+  args: {
+    email: v.string(),
+    status: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const user = await ctx.db
+      .query("users")
+      .filter((q) => q.eq(q.field("email"), args.email))
+      .unique();
+    if (!user) {
+      throw new Error(`No user with email ${args.email}`);
+    }
+    await ctx.db.patch(user._id, { stripeSubscriptionStatus: args.status });
+    return { email: args.email, stripeSubscriptionStatus: args.status };
+  },
+});
+
 export const updateUserSubscription = internalMutation({
   args: {
     stripeCustomerId: v.string(),

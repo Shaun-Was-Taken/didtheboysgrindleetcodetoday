@@ -1,9 +1,17 @@
-import { mutation, query, internalQuery } from "./_generated/server";
+import { mutation, query, internalQuery, internalMutation } from "./_generated/server";
 import { ConvexError, v } from "convex/values";
+import { TRACKED_COMPANY_NAMES } from "./companies";
 
 /**
- * Toggle a Premium user's email alert subscription for a company's new
- * postings. Throws for non-Premium users so the UI can show an upsell.
+ * Job alerts are DEFAULT-ON for Premium users: an active subscriber gets an
+ * email for every tracked company unless they mute it. A row in `jobAlerts`
+ * therefore means "muted" — no rows means all alerts on. This also makes
+ * newly added companies alert everyone automatically.
+ */
+
+/**
+ * Toggle a Premium user's email alert for a company. Throws for non-Premium
+ * users so the UI can show an upsell.
  */
 export const toggleAlert = mutation({
   args: { company: v.string() },
@@ -23,58 +31,74 @@ export const toggleAlert = mutation({
       );
     }
 
-    const existing = await ctx.db
+    const muted = await ctx.db
       .query("jobAlerts")
       .withIndex("by_user_company", (q) =>
         q.eq("userId", clerkId).eq("company", args.company)
       )
       .unique();
-    if (existing) {
-      await ctx.db.delete(existing._id);
-      return { subscribed: false };
+    if (muted) {
+      await ctx.db.delete(muted._id);
+      return { subscribed: true };
     }
     await ctx.db.insert("jobAlerts", {
       userId: clerkId,
       company: args.company,
       email: user.email,
     });
-    return { subscribed: true };
+    return { subscribed: false };
   },
 });
 
+/** Companies the current user has alerts ON for (all tracked minus muted). */
 export const getMyAlerts = query({
   args: {},
   handler: async (ctx) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) return [];
-    const rows = await ctx.db
+    const mutedRows = await ctx.db
       .query("jobAlerts")
       .withIndex("by_user", (q) => q.eq("userId", identity.subject))
       .collect();
-    return rows.map((r) => r.company);
+    const muted = new Set(mutedRows.map((r) => r.company));
+    return TRACKED_COMPANY_NAMES.filter((c) => !muted.has(c));
   },
 });
 
 /**
- * Emails of users subscribed to a company's alerts who currently have an
- * active Premium subscription. Premium is re-checked here so lapsed
- * subscribers stop receiving alerts without needing their rows cleaned up.
+ * Emails of active Premium users who haven't muted this company. Premium is
+ * checked here so lapsed subscribers stop receiving alerts automatically.
  */
 export const getSubscribersForCompany = internalQuery({
   args: { company: v.string() },
   handler: async (ctx, args) => {
-    const rows = await ctx.db
-      .query("jobAlerts")
-      .withIndex("by_company", (q) => q.eq("company", args.company))
-      .collect();
+    const users = await ctx.db.query("users").collect();
     const emails: string[] = [];
-    for (const r of rows) {
-      const user = await ctx.db
-        .query("users")
-        .withIndex("by_clerkId", (q) => q.eq("clerkId", r.userId))
+    for (const user of users) {
+      if (user.stripeSubscriptionStatus !== "active") continue;
+      const muted = await ctx.db
+        .query("jobAlerts")
+        .withIndex("by_user_company", (q) =>
+          q.eq("userId", user.clerkId).eq("company", args.company)
+        )
         .unique();
-      if (user?.stripeSubscriptionStatus === "active") emails.push(r.email);
+      if (!muted) emails.push(user.email);
     }
     return emails;
+  },
+});
+
+/**
+ * One-off migration helper for the opt-in → default-on flip: the old schema's
+ * rows meant "subscribed", which under the new semantics would read as
+ * "muted". Run once after deploying to clear them:
+ *   npx convex run jobAlerts:devClearAllAlerts
+ */
+export const devClearAllAlerts = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const rows = await ctx.db.query("jobAlerts").collect();
+    for (const row of rows) await ctx.db.delete(row._id);
+    return { deleted: rows.length };
   },
 });

@@ -215,7 +215,8 @@ export default defineSchema({
     .index("by_user", ["userId"])
     .index("by_group_user", ["groupId", "userId"]),
 
-  // Premium-only per-company job alert subscriptions.
+  // Premium job alerts are default-on; a row here means the user MUTED that
+  // company's alerts (see convex/jobAlerts.ts).
   jobAlerts: defineTable({
     userId: v.string(), // clerkId
     company: v.string(), // display/company name, e.g. "Apple"
