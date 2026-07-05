@@ -1,8 +1,6 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import Link from "next/link";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import JobAlertBell from "./JobAlertBell";
 
 interface Job {
@@ -24,145 +22,158 @@ interface JobBoardProps {
 }
 
 import { useState, useEffect } from "react";
-import { Search, ChevronDown } from "lucide-react";
+import { Search, ChevronDown, ArrowUpRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
-export default function JobBoard({ companyName, jobs, fetchInterval = "every hour", logoUrl, maxHeight = "max-h-[400px]" }: JobBoardProps) {
+const FRESH_WINDOW_MS = 48 * 60 * 60 * 1000;
+
+function isFresh(job: Job): boolean {
+  const seen = Date.parse(job.firstSeen);
+  return !Number.isNaN(seen) && Date.now() - seen < FRESH_WINDOW_MS;
+}
+
+function listedOn(job: Job): string {
+  return new Date(job.firstSeen).toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+  });
+}
+
+export default function JobBoard({ companyName, jobs, logoUrl, maxHeight = "max-h-[400px]" }: JobBoardProps) {
   const [imageError, setImageError] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [filteredJobs, setFilteredJobs] = useState<Job[]>([]);
   const [collapsed, setCollapsed] = useState(false);
 
   useEffect(() => {
     setImageError(false);
   }, [logoUrl]);
 
-  useEffect(() => {
-    if (jobs) {
-      const filtered = jobs.filter(job => 
-        job.title.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-      setFilteredJobs(filtered);
-    }
-  }, [jobs, searchQuery]);
+  const filteredJobs = (jobs ?? []).filter((job) =>
+    job.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   if (!jobs) {
     return (
-      <Card className="w-full">
+      <Card className="w-full max-w-2xl self-start">
         <CardHeader>
-          <CardTitle>{companyName}</CardTitle>
+          <p className="font-display text-xl">{companyName}</p>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground">Loading jobs...</p>
+          <p className="text-sm text-muted-foreground">Loading jobs…</p>
         </CardContent>
       </Card>
     );
   }
 
+  const freshCount = jobs.filter(isFresh).length;
+
   return (
-    <Card className="w-full max-w-2xl self-start">
-      <CardHeader>
-        <div className="flex items-start justify-between mb-4">
-          <div>
-            <div className="flex items-center gap-3 mb-2">
-              {logoUrl && !imageError ? (
-                <div className="w-10 h-10 rounded-md overflow-hidden bg-white border border-border flex items-center justify-center p-1 shrink-0">
-                  <img 
-                    src={logoUrl} 
-                    alt={`${companyName} logo`} 
-                    className="w-full h-full object-contain"
-                    onError={() => setImageError(true)}
-                  />
-                </div>
-              ) : (
-                <div className="w-10 h-10 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
-                  <span className="text-lg font-bold text-primary">{companyName.charAt(0)}</span>
-                </div>
+    <Card className="w-full max-w-2xl self-start gap-0 py-0 overflow-hidden">
+      <CardHeader className="gap-0 px-5 pt-5 pb-4">
+        <div className="flex items-center gap-3">
+          {logoUrl && !imageError ? (
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-md border border-border bg-white p-1">
+              <img
+                src={logoUrl}
+                alt=""
+                className="h-full w-full object-contain"
+                onError={() => setImageError(true)}
+              />
+            </div>
+          ) : (
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-primary/10">
+              <span className="font-display text-base font-semibold text-primary">
+                {companyName.charAt(0)}
+              </span>
+            </div>
+          )}
+
+          <div className="min-w-0 flex-1">
+            <h3 className="truncate font-display text-xl leading-tight">
+              {companyName}
+            </h3>
+            <p className="font-mono text-[11px] tracking-wide text-muted-foreground">
+              {jobs.length} {jobs.length === 1 ? "role" : "roles"}
+              {freshCount > 0 && (
+                <span className="text-primary font-semibold">
+                  {" "}· {freshCount} fresh
+                </span>
               )}
-              <CardTitle className="text-2xl">{companyName}</CardTitle>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="relative flex items-center justify-center">
-                <div className="absolute w-2 h-2 bg-green-500 rounded-full animate-ping"></div>
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              </div>
-              <p className="text-sm text-muted-foreground">Fetching {fetchInterval}</p>
-            </div>
+            </p>
           </div>
-          <div className="flex items-center gap-2">
+
+          <div className="flex items-center gap-1">
             <JobAlertBell company={companyName} />
-            <Badge variant="secondary" className="text-sm">
-              {filteredJobs.length} {filteredJobs.length === 1 ? "job" : "jobs"}
-            </Badge>
             <button
               type="button"
               onClick={() => setCollapsed((c) => !c)}
               aria-expanded={!collapsed}
               aria-label={collapsed ? `Expand ${companyName} jobs` : `Collapse ${companyName} jobs`}
-              className="rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+              className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             >
               <ChevronDown className={`h-5 w-5 transition-transform ${collapsed ? "-rotate-90" : ""}`} />
             </button>
           </div>
         </div>
 
-        {!collapsed && (
-          <div className="relative">
+        {!collapsed && jobs.length > 8 && (
+          <div className="relative mt-4">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
-              placeholder="Search jobs..."
-              className="pl-9"
+              placeholder={`Search ${jobs.length} roles…`}
+              className="h-9 pl-9"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
         )}
       </CardHeader>
+
       {!collapsed && (
-      <CardContent>
-        {filteredJobs.length === 0 ? (
-          <p className="text-muted-foreground text-center py-4">
-            {jobs.length === 0 ? "No relevant jobs found yet." : "No jobs match your search."}
-          </p>
-        ) : (
-          <div className={`space-y-3 ${maxHeight} overflow-y-auto pr-2`}>
-            {filteredJobs.map((job) => (
-              <Card key={job.jobId} className="relative overflow-hidden hover:shadow-md transition-shadow">
-                <span
-                  aria-hidden
-                  className="absolute inset-y-0 left-0 w-1.5 bg-primary"
-                />
-                <CardContent className="p-4 pl-5">
-                  <div className="flex flex-col gap-2">
-                    <h3 className="font-semibold text-base leading-tight" title={job.title}>
-                      {job.title}
-                    </h3>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      {job.location && (
-                        <Badge variant="outline" className="text-xs">
-                          📍 {job.location}
-                        </Badge>
-                      )}
-                      <span className="text-xs text-muted-foreground">
-                        Listed: {new Date(job.firstSeen).toLocaleDateString()}
-                      </span>
-                    </div>
-                    <Link
+        <CardContent className="px-2 pb-2 pt-0">
+          {filteredJobs.length === 0 ? (
+            <p className="px-3 py-6 text-center text-sm text-muted-foreground">
+              {jobs.length === 0
+                ? "Nothing yet — the watcher checks every hour."
+                : "No roles match your search."}
+            </p>
+          ) : (
+            <ul className={`${maxHeight} divide-y divide-border/60 overflow-y-auto`}>
+              {filteredJobs.map((job) => {
+                const fresh = isFresh(job);
+                return (
+                  <li key={job.jobId}>
+                    <a
                       href={job.link}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-primary hover:underline text-sm font-medium inline-flex items-center gap-1 w-fit"
+                      className={`group/row flex items-start gap-2 rounded-lg px-3 py-2.5 transition-colors hover:bg-muted/70 ${
+                        fresh ? "bg-accent/35" : ""
+                      }`}
                     >
-                      View Job →
-                    </Link>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
-      </CardContent>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium leading-snug" title={job.title}>
+                          {job.title}
+                        </p>
+                        <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                          {job.location ? `${job.location} · ` : ""}
+                          <span className="font-mono">{listedOn(job)}</span>
+                          {fresh && (
+                            <span className="ml-1.5 font-mono text-[10px] font-bold tracking-[0.14em] text-primary">
+                              FRESH
+                            </span>
+                          )}
+                        </p>
+                      </div>
+                      <ArrowUpRight className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover/row:opacity-100" />
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </CardContent>
       )}
     </Card>
   );

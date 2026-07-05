@@ -10,7 +10,7 @@ import { Progress } from "@/components/ui/progress";
 import { CheckCircle, XCircle, Users } from "lucide-react";
 import Link from "next/link";
 
-const DAILY_GOAL = 2;
+const DEFAULT_DAILY_GOAL = 2;
 
 export default function DailyLeaderboard() {
   const todayDate = todayStr();
@@ -19,6 +19,8 @@ export default function DailyLeaderboard() {
   const board = useQuery(api.groups.getDailyLeaderboard, {
     date: todayDate,
   });
+
+  const dailyGoal = board?.dailyGoal ?? DEFAULT_DAILY_GOAL;
 
   // Helper to get initials for avatar fallback
   const getInitials = (name: string | undefined | null) => {
@@ -39,6 +41,12 @@ export default function DailyLeaderboard() {
     board?.scope === "group" ? (
       <span className="inline-flex items-center gap-1">
         <Users className="h-3.5 w-3.5" /> {board.groupName}
+        {!board.canEditGoal && (
+          <span className="text-muted-foreground/80">
+            {" "}
+            · goal set by the group owner
+          </span>
+        )}
       </span>
     ) : board?.scope === "self" ? (
       <>
@@ -59,7 +67,16 @@ export default function DailyLeaderboard() {
           Today&apos;s Grind ({format(new Date(), "MMMM d")})
         </CardTitle>
         <p className="text-sm text-muted-foreground">
-          Goal: Complete {DAILY_GOAL} LeetCode problems today.
+          Goal: Complete {dailyGoal} LeetCode{" "}
+          {dailyGoal === 1 ? "problem" : "problems"} today.
+          {board?.canEditGoal && (
+            <Link
+              href="/groups"
+              className="ml-1.5 text-primary hover:underline"
+            >
+              Change goal
+            </Link>
+          )}
         </p>
         {subtitle && (
           <p className="text-sm text-muted-foreground">{subtitle}</p>
@@ -75,9 +92,9 @@ export default function DailyLeaderboard() {
         )}
         <ul className="space-y-4">
           {sortedCompletions.map((completion) => {
-            const isGoalMet = completion.count >= DAILY_GOAL;
+            const isGoalMet = completion.count >= dailyGoal;
             const progressValue = Math.min(
-              (completion.count / DAILY_GOAL) * 100,
+              (completion.count / dailyGoal) * 100,
               100
             );
 
@@ -101,7 +118,7 @@ export default function DailyLeaderboard() {
                     <span
                       className={`text-sm font-semibold ${isGoalMet ? "text-green-600" : "text-orange-600"}`}
                     >
-                      {completion.count} / {DAILY_GOAL}
+                      {completion.count} / {dailyGoal}
                     </span>
                   </div>
                   <Progress value={progressValue} className="h-2" />

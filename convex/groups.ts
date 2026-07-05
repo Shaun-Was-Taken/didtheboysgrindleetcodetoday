@@ -6,6 +6,11 @@ import { Id } from "./_generated/dataModel";
 export const FREE_CAP = 3;
 export const PREMIUM_CAP = 15;
 
+// Problems per day before the leaderboard counts you as done.
+export const DEFAULT_DAILY_GOAL = 2;
+const MIN_DAILY_GOAL = 1;
+const MAX_DAILY_GOAL = 50;
+
 // Unambiguous code alphabet (no 0/O/1/I) for shareable invite codes.
 const CODE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
@@ -206,6 +211,48 @@ export const kickMember = mutation({
   },
 });
 
+/**
+ * Set the daily problem goal. In a group, only the owner may set it and it
+ * applies to every member; solo users set their own. Default is 2.
+ */
+export const setDailyGoal = mutation({
+  args: { goal: v.number() },
+  handler: async (ctx, args) => {
+    const clerkId = await requireClerkId(ctx);
+    const goal = Math.round(args.goal);
+    if (goal < MIN_DAILY_GOAL || goal > MAX_DAILY_GOAL) {
+      throw new ConvexError(
+        `Daily goal must be between ${MIN_DAILY_GOAL} and ${MAX_DAILY_GOAL}.`
+      );
+    }
+
+    const membership = await ctx.db
+      .query("groupMembers")
+      .withIndex("by_user", (q) => q.eq("userId", clerkId))
+      .first();
+
+    if (membership) {
+      const group = await ctx.db.get(membership.groupId);
+      if (!group) throw new ConvexError("Group not found.");
+      if (group.ownerId !== clerkId) {
+        throw new ConvexError(
+          "Only the group owner can set the group's daily goal."
+        );
+      }
+      await ctx.db.patch(group._id, { dailyGoal: goal });
+      return { goal, scope: "group" as const };
+    }
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_clerkId", (q) => q.eq("clerkId", clerkId))
+      .unique();
+    if (!user) throw new ConvexError("User not found.");
+    await ctx.db.patch(user._id, { dailyGoal: goal });
+    return { goal, scope: "self" as const };
+  },
+});
+
 export const getMyGroups = query({
   args: {},
   handler: async (ctx) => {
@@ -250,7 +297,13 @@ export const getDailyLeaderboard = query({
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
-      return { scope: "signedOut" as const, groupName: null, entries: [] };
+      return {
+        scope: "signedOut" as const,
+        groupName: null,
+        entries: [],
+        dailyGoal: DEFAULT_DAILY_GOAL,
+        canEditGoal: false,
+      };
     }
     const clerkId = identity.subject;
 
@@ -262,6 +315,8 @@ export const getDailyLeaderboard = query({
     let memberIds: string[];
     let scope: "group" | "self";
     let groupName: string | null = null;
+    let dailyGoal = DEFAULT_DAILY_GOAL;
+    let canEditGoal: boolean;
 
     if (membership) {
       const group = await ctx.db.get(membership.groupId);
@@ -272,9 +327,17 @@ export const getDailyLeaderboard = query({
       memberIds = rows.map((r) => r.userId);
       scope = "group";
       groupName = group?.name ?? null;
+      dailyGoal = group?.dailyGoal ?? DEFAULT_DAILY_GOAL;
+      canEditGoal = group?.ownerId === clerkId;
     } else {
       memberIds = [clerkId];
       scope = "self";
+      const me = await ctx.db
+        .query("users")
+        .withIndex("by_clerkId", (q) => q.eq("clerkId", clerkId))
+        .unique();
+      dailyGoal = me?.dailyGoal ?? DEFAULT_DAILY_GOAL;
+      canEditGoal = true;
     }
 
     const entries = [];
@@ -297,7 +360,7 @@ export const getDailyLeaderboard = query({
       });
     }
 
-    return { scope, groupName, entries };
+    return { scope, groupName, entries, dailyGoal, canEditGoal };
   },
 });
 
@@ -389,6 +452,7 @@ export const getGroupDetail = query({
       cap,
       memberCount: members.length,
       members,
+      dailyGoal: group.dailyGoal ?? DEFAULT_DAILY_GOAL,
     };
   },
 });

@@ -19,6 +19,7 @@ import {
 import Link from "next/link";
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
+import DailyGoalControl from "./DailyGoalControl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -47,6 +48,12 @@ export default function GroupsManager() {
 
   const myGroups = useQuery(api.groups.getMyGroups, isSignedIn ? {} : "skip");
   const inAnyGroup = (myGroups ?? []).length > 0;
+  // Solo users set their personal goal here; reuse the leaderboard query,
+  // which already resolves the effective goal for the signed-in user.
+  const myBoard = useQuery(
+    api.groups.getDailyLeaderboard,
+    isSignedIn ? { date: today } : "skip"
+  );
   const [selectedId, setSelectedId] = useState<Id<"groups"> | null>(null);
   const detail = useQuery(
     api.groups.getGroupDetail,
@@ -183,15 +190,26 @@ export default function GroupsManager() {
       {myGroups === undefined ? (
         <p className="text-muted-foreground">Loading groups…</p>
       ) : myGroups.length === 0 ? (
-        <div className="rounded-2xl border border-dashed p-10 text-center">
-          <span className="mx-auto mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-accent text-primary ring-1 ring-border">
-            <Users className="h-6 w-6" />
-          </span>
-          <p className="font-display text-lg font-medium">No crew yet</p>
-          <p className="mx-auto mt-1 max-w-sm text-sm text-muted-foreground">
-            Create a group and share the invite code, or join one with a code a
-            friend sent you.
-          </p>
+        <div className="space-y-4">
+          <div className="rounded-2xl border border-dashed p-10 text-center">
+            <span className="mx-auto mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-accent text-primary ring-1 ring-border">
+              <Users className="h-6 w-6" />
+            </span>
+            <p className="font-display text-lg font-medium">No crew yet</p>
+            <p className="mx-auto mt-1 max-w-sm text-sm text-muted-foreground">
+              Create a group and share the invite code, or join one with a code
+              a friend sent you.
+            </p>
+          </div>
+          {myBoard?.scope === "self" && (
+            <div className="mx-auto max-w-md">
+              <DailyGoalControl
+                goal={myBoard.dailyGoal}
+                canEdit
+                caption="Your solo pace — problems per day on Today's Grind. Joining a group switches you to its goal."
+              />
+            </div>
+          )}
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -307,6 +325,18 @@ export default function GroupsManager() {
                   </Button>
                 )}
               </div>
+            </div>
+
+            <div className="mb-4">
+              <DailyGoalControl
+                goal={detail.dailyGoal}
+                canEdit={detail.isOwner}
+                caption={
+                  detail.isOwner
+                    ? `Problems each member needs per day. Applies to everyone in ${detail.name}.`
+                    : "Problems per day, set by the group owner."
+                }
+              />
             </div>
 
             <ul className="divide-y">

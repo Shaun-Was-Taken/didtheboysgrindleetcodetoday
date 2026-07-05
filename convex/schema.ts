@@ -16,6 +16,8 @@ export default defineSchema({
     leetcodeUsername: v.optional(v.string()),
     leetcodeVerified: v.optional(v.boolean()), // ownership proven (fast-follow)
     lastLeetcodeSyncAt: v.optional(v.number()), // unix ms heartbeat
+    // Personal daily problem goal; only applies when not in a group.
+    dailyGoal: v.optional(v.number()),
   })
     .index("by_clerkId", ["clerkId"])
     .index("by_email", ["email"])
@@ -202,6 +204,8 @@ export default defineSchema({
     ownerId: v.string(), // clerkId of the owner
     inviteCode: v.string(),
     createdAt: v.string(),
+    // Owner-set daily problem goal for every member (default 2 when unset).
+    dailyGoal: v.optional(v.number()),
   })
     .index("by_ownerId", ["ownerId"])
     .index("by_inviteCode", ["inviteCode"]),
