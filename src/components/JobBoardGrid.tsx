@@ -18,6 +18,9 @@ import OppdJobs from "./OppdJobs";
 import HRBlockJobs from "./HRBlockJobs";
 import NetsmartJobs from "./NetsmartJobs";
 import GMJobs from "./GMJobs";
+import PinterestJobs from "./PinterestJobs";
+import AirbnbJobs from "./AirbnbJobs";
+import DatadogJobs from "./DatadogJobs";
 import { useIsOwner } from "@/hooks/useIsOwner";
 
 export default function JobBoardGrid() {
@@ -45,6 +48,9 @@ export default function JobBoardGrid() {
       {isOwner && <HRBlockJobs />}
       {isOwner && <NetsmartJobs />}
       <GMJobs />
+      <PinterestJobs />
+      <AirbnbJobs />
+      <DatadogJobs />
     </div>
   );
 }

@@ -23,6 +23,9 @@ export const TRACKED_COMPANIES = [
   { name: "H&R Block", domain: "hrblock.com" },
   { name: "Netsmart", domain: "ntst.com" },
   { name: "GM", domain: "gm.com" },
+  { name: "Pinterest", domain: "pinterest.com" },
+  { name: "Airbnb", domain: "airbnb.com" },
+  { name: "Datadog", domain: "datadoghq.com" },
 ] as const;
 
 export const TRACKED_COMPANY_NAMES: string[] = TRACKED_COMPANIES.map(

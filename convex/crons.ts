@@ -111,6 +111,24 @@ crons.interval(
   internal.gm.fetchGMJobs
 );
 
+crons.interval(
+  "pinterest-job-monitor",
+  { hours: 1 },
+  internal.pinterest.fetchPinterestJobs
+);
+
+crons.interval(
+  "airbnb-job-monitor",
+  { hours: 1 },
+  internal.airbnb.fetchAirbnbJobs
+);
+
+crons.interval(
+  "datadog-job-monitor",
+  { hours: 1 },
+  internal.datadog.fetchDatadogJobs
+);
+
 // Daily audit: flag fetchers whose title filter is silently dropping
 // software-ish postings (see convex/jobAudit.ts).
 crons.interval(

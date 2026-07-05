@@ -14,6 +14,7 @@ import type {
   FunctionReference,
 } from "convex/server";
 import type * as access from "../access.js";
+import type * as airbnb from "../airbnb.js";
 import type * as amazon from "../amazon.js";
 import type * as anthropic from "../anthropic.js";
 import type * as apple from "../apple.js";
@@ -21,6 +22,7 @@ import type * as atlassian from "../atlassian.js";
 import type * as companies from "../companies.js";
 import type * as crons from "../crons.js";
 import type * as databricks from "../databricks.js";
+import type * as datadog from "../datadog.js";
 import type * as email from "../email.js";
 import type * as files from "../files.js";
 import type * as garmin from "../garmin.js";
@@ -40,6 +42,7 @@ import type * as netsmart from "../netsmart.js";
 import type * as nvidia from "../nvidia.js";
 import type * as openai from "../openai.js";
 import type * as oppd from "../oppd.js";
+import type * as pinterest from "../pinterest.js";
 import type * as salesforce from "../salesforce.js";
 import type * as stripe from "../stripe.js";
 import type * as stripe_jobs from "../stripe_jobs.js";
@@ -57,6 +60,7 @@ import type * as wellsky from "../wellsky.js";
  */
 declare const fullApi: ApiFromModules<{
   access: typeof access;
+  airbnb: typeof airbnb;
   amazon: typeof amazon;
   anthropic: typeof anthropic;
   apple: typeof apple;
@@ -64,6 +68,7 @@ declare const fullApi: ApiFromModules<{
   companies: typeof companies;
   crons: typeof crons;
   databricks: typeof databricks;
+  datadog: typeof datadog;
   email: typeof email;
   files: typeof files;
   garmin: typeof garmin;
@@ -83,6 +88,7 @@ declare const fullApi: ApiFromModules<{
   nvidia: typeof nvidia;
   openai: typeof openai;
   oppd: typeof oppd;
+  pinterest: typeof pinterest;
   salesforce: typeof salesforce;
   stripe: typeof stripe;
   stripe_jobs: typeof stripe_jobs;

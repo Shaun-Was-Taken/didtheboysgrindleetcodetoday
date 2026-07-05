@@ -166,6 +166,30 @@ export default defineSchema({
     firstSeen: v.string(),
   }).index("by_jobId", ["jobId"]),
 
+  pinterestJobs: defineTable({
+    jobId: v.string(), // Greenhouse job id
+    title: v.string(),
+    link: v.string(),
+    location: v.optional(v.string()),
+    firstSeen: v.string(),
+  }).index("by_jobId", ["jobId"]),
+
+  airbnbJobs: defineTable({
+    jobId: v.string(), // Greenhouse job id
+    title: v.string(),
+    link: v.string(),
+    location: v.optional(v.string()),
+    firstSeen: v.string(),
+  }).index("by_jobId", ["jobId"]),
+
+  datadogJobs: defineTable({
+    jobId: v.string(), // Greenhouse job id
+    title: v.string(),
+    link: v.string(),
+    location: v.optional(v.string()),
+    firstSeen: v.string(),
+  }).index("by_jobId", ["jobId"]),
+
   oppdJobs: defineTable({
     jobId: v.string(), // PeopleSoft JobOpeningId
     title: v.string(),
