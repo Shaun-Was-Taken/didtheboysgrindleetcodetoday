@@ -2,6 +2,7 @@
 
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import JobAlertBell from "./JobAlertBell";
+import { isInternship } from "../../convex/jobFetchers";
 
 interface Job {
   _id: string;
@@ -162,6 +163,14 @@ export default function JobBoard({ companyName, jobs, logoUrl, maxHeight = "max-
                           {fresh && (
                             <span className="ml-1.5 font-mono text-[10px] font-bold tracking-[0.14em] text-primary">
                               FRESH
+                            </span>
+                          )}
+                          {isInternship(job.title) && (
+                            <span
+                              className="ml-1.5 font-mono text-[10px] font-bold tracking-[0.14em]"
+                              style={{ color: "var(--chart-3)" }}
+                            >
+                              INTERN
                             </span>
                           )}
                         </p>

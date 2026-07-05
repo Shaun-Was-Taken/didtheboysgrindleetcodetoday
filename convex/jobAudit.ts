@@ -184,6 +184,8 @@ const SOURCES: { company: string; getTitles: () => Promise<string[]> }[] = [
   { company: "Pinterest", getTitles: () => rawGreenhouseTitles("pinterest") },
   { company: "Airbnb", getTitles: () => rawGreenhouseTitles("airbnb") },
   { company: "Datadog", getTitles: () => rawGreenhouseTitles("datadog") },
+  { company: "Duolingo", getTitles: () => rawGreenhouseTitles("duolingo") },
+  { company: "Discord", getTitles: () => rawGreenhouseTitles("discord") },
   { company: "Atlassian", getTitles: () => rawAtlassianTitles() },
   { company: "GM", getTitles: () => rawGMTitles() },
   { company: "H&R Block", getTitles: () => rawHRBlockTitles() },

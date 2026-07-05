@@ -190,6 +190,22 @@ export default defineSchema({
     firstSeen: v.string(),
   }).index("by_jobId", ["jobId"]),
 
+  duolingoJobs: defineTable({
+    jobId: v.string(), // Greenhouse job id
+    title: v.string(),
+    link: v.string(),
+    location: v.optional(v.string()),
+    firstSeen: v.string(),
+  }).index("by_jobId", ["jobId"]),
+
+  discordJobs: defineTable({
+    jobId: v.string(), // Greenhouse job id
+    title: v.string(),
+    link: v.string(),
+    location: v.optional(v.string()),
+    firstSeen: v.string(),
+  }).index("by_jobId", ["jobId"]),
+
   oppdJobs: defineTable({
     jobId: v.string(), // PeopleSoft JobOpeningId
     title: v.string(),

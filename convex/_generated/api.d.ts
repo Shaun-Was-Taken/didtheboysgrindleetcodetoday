@@ -23,6 +23,8 @@ import type * as companies from "../companies.js";
 import type * as crons from "../crons.js";
 import type * as databricks from "../databricks.js";
 import type * as datadog from "../datadog.js";
+import type * as discord from "../discord.js";
+import type * as duolingo from "../duolingo.js";
 import type * as email from "../email.js";
 import type * as files from "../files.js";
 import type * as garmin from "../garmin.js";
@@ -69,6 +71,8 @@ declare const fullApi: ApiFromModules<{
   crons: typeof crons;
   databricks: typeof databricks;
   datadog: typeof datadog;
+  discord: typeof discord;
+  duolingo: typeof duolingo;
   email: typeof email;
   files: typeof files;
   garmin: typeof garmin;

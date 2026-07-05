@@ -40,8 +40,22 @@ export function isSoftwareEngineer(title: string): boolean {
   return (
     /\bsoftware\b.*\bengineer/.test(t) || // "Software [Frontend/Security/…] Engineer"
     t.includes("developer") ||
-    /\bengineers?,\s*software/.test(t) // inverted: "Engineer, Software"
+    /\bengineers?,\s*software/.test(t) || // inverted: "Engineer, Software"
+    // Software roles titled by discipline instead of "software" (Duolingo's
+    // "Senior iOS Engineer", Discord's "Backend Engineer", …). The discipline
+    // must sit directly before "Engineer" so non-software engineering titles
+    // ("Manufacturing Engineer", "Data Center Facilities Engineer") stay out.
+    /\b(ios|android|mobile|backend|back[ -]end|frontend|front[ -]end|full[ -]?stack|web|platform|infrastructure|ml|ai|data|sre|devops|cloud|security|machine learning|site reliability)[\s/]+engineers?\b/.test(
+      t
+    )
   );
+}
+
+// True for internship/co-op postings. Word-boundary match so "Internet" and
+// "International" don't count. Internships are kept and alerted on — this
+// exists so the UI and emails can label them.
+export function isInternship(title: string): boolean {
+  return /\bintern(ship)?s?\b|\bco-?op\b/i.test(title);
 }
 
 // Looser "smells like a software role" signal, used only by the filter audit to

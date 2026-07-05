@@ -1,6 +1,7 @@
 import { internalAction } from "./_generated/server";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
+import { isInternship } from "./jobFetchers";
 
 interface JobInfo {
   title: string;
@@ -130,6 +131,7 @@ function buildEmailHtml(company: string, jobs: JobInfo[]): string {
           <a href="${job.link}" style="color: #2563eb; text-decoration: none; font-weight: 600; font-size: 16px;">
             ${job.title}
           </a>
+          ${isInternship(job.title) ? `<span style="display: inline-block; margin-left: 8px; background: #fef3c7; color: #92400e; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; padding: 2px 8px; border-radius: 999px; vertical-align: middle;">INTERNSHIP</span>` : ""}
           ${job.location ? `<div style="color: #6b7280; font-size: 13px; margin-top: 4px;">📍 ${job.location}</div>` : ""}
         </td>
         <td style="padding: 16px 20px; border-bottom: 1px solid #f0f0f0; text-align: right; vertical-align: middle;">
@@ -186,7 +188,8 @@ function buildEmailHtml(company: string, jobs: JobInfo[]): string {
 function buildEmailText(company: string, jobs: JobInfo[]): string {
   const lines = jobs.map((job) => {
     const loc = job.location ? ` (${job.location})` : "";
-    return `- ${job.title}${loc}\n  Apply: ${job.link}`;
+    const intern = isInternship(job.title) ? " [INTERNSHIP]" : "";
+    return `- ${job.title}${loc}${intern}\n  Apply: ${job.link}`;
   });
 
   return [
@@ -225,6 +228,11 @@ export const testEmailSending = internalAction({
             title: "Software Engineer II (Test Job)",
             link: "https://example.com/jobs/test-2",
             location: "Austin, TX",
+          },
+          {
+            title: "Software Engineer Intern (Test Job)",
+            link: "https://example.com/jobs/test-3",
+            location: "Remote, US",
           },
         ],
       }

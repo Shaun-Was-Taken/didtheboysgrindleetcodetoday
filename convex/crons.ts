@@ -129,6 +129,18 @@ crons.interval(
   internal.datadog.fetchDatadogJobs
 );
 
+crons.interval(
+  "duolingo-job-monitor",
+  { hours: 1 },
+  internal.duolingo.fetchDuolingoJobs
+);
+
+crons.interval(
+  "discord-job-monitor",
+  { hours: 1 },
+  internal.discord.fetchDiscordJobs
+);
+
 // Daily audit: flag fetchers whose title filter is silently dropping
 // software-ish postings (see convex/jobAudit.ts).
 crons.interval(
