@@ -4,6 +4,11 @@ import { SignInButton } from "@clerk/nextjs";
 import { ArrowRight, RefreshCw } from "lucide-react";
 import { COMPANIES } from "./brand-logos";
 import { Button } from "./ui/button";
+import { isPrivateCompany } from "@/lib/companies";
+
+// The landing page is only shown to signed-out visitors, so owner-only
+// boards (Garmin, WellSky, OPPD, H&R Block, Netsmart) are never advertised.
+const PUBLIC_COMPANIES = COMPANIES.filter((c) => !isPrivateCompany(c.name));
 
 function Mark({ company }: { company: (typeof COMPANIES)[number] }) {
   if (company.mono) {
@@ -120,7 +125,7 @@ export default function JobsSection() {
               While you grind, we watch the careers pages. Fresh new-grad and
               software roles from{" "}
               <span className="font-semibold text-foreground">
-                18 top companies
+                {PUBLIC_COMPANIES.length} top companies
               </span>{" "}
               land on your board automatically — no scraping tabs, no missed
               postings. And like everything here, it&apos;s free.
@@ -151,7 +156,7 @@ export default function JobsSection() {
             NOW TRACKING
           </p>
           <ul className="grid grid-cols-3 gap-2.5 sm:grid-cols-5">
-            {COMPANIES.map((c) => (
+            {PUBLIC_COMPANIES.map((c) => (
               <li
                 key={c.name}
                 className="group/tile flex flex-col items-center justify-center gap-1.5 rounded-xl border border-border/70 bg-card/80 py-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-sm"

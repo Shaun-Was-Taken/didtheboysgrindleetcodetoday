@@ -1,6 +1,7 @@
 import { internalAction, internalMutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
+import { isOwner } from "./access";
 
 // WellSky uses Workday. Job listings come from the Workday CXS API.
 const WORKDAY_TENANT = "wellsky";
@@ -159,6 +160,8 @@ export const saveWellSkyJobs = internalMutation({
 export const getJobs = query({
   args: {},
   handler: async (ctx) => {
+    // Owner-only board: hidden from everyone else (see convex/companies.ts).
+    if (!(await isOwner(ctx))) return [];
     return await ctx.db.query("wellskyJobs").order("desc").collect();
   },
 });

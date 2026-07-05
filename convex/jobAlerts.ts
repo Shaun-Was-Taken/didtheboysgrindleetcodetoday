@@ -1,6 +1,11 @@
 import { mutation, query, internalQuery, internalMutation } from "./_generated/server";
 import { ConvexError, v } from "convex/values";
-import { TRACKED_COMPANY_NAMES } from "./companies";
+import {
+  isPrivateCompany,
+  OWNER_EMAIL,
+  visibleCompanyNames,
+} from "./companies";
+import { isOwner } from "./access";
 
 /**
  * Job alerts are DEFAULT-ON for Premium users: an active subscriber gets an
@@ -61,7 +66,9 @@ export const getMyAlerts = query({
       .withIndex("by_user", (q) => q.eq("userId", identity.subject))
       .collect();
     const muted = new Set(mutedRows.map((r) => r.company));
-    return TRACKED_COMPANY_NAMES.filter((c) => !muted.has(c));
+    return visibleCompanyNames(await isOwner(ctx)).filter(
+      (c) => !muted.has(c)
+    );
   },
 });
 
@@ -76,6 +83,12 @@ export const getSubscribersForCompany = internalQuery({
     const emails: string[] = [];
     for (const user of users) {
       if (user.stripeSubscriptionStatus !== "active") continue;
+      // Owner-only companies never alert anyone but the owner.
+      if (
+        isPrivateCompany(args.company) &&
+        user.email.toLowerCase() !== OWNER_EMAIL.toLowerCase()
+      )
+        continue;
       const muted = await ctx.db
         .query("jobAlerts")
         .withIndex("by_user_company", (q) =>

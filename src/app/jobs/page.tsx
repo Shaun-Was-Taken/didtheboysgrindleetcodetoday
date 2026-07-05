@@ -29,7 +29,7 @@ export default function JobsPage() {
             Where the boys are applying
           </h1>
           <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
-            New-grad &amp; software engineer roles, auto-tracked across 15 top
+            New-grad &amp; software engineer roles, auto-tracked across top
             companies — so you never miss a fresh posting.
           </p>
           {isSignedIn && (

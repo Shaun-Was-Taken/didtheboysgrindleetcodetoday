@@ -2,6 +2,7 @@ import { internalAction, internalMutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import { fetchWorkdayJobs } from "./jobFetchers";
+import { isOwner } from "./access";
 
 // Netsmart uses Workday (tenant "ntst", site "Careers"). The careers URL pins two
 // location facets (Overland Park, KS + a second US location), so we apply the same
@@ -87,6 +88,8 @@ export const saveNetsmartJobs = internalMutation({
 export const getJobs = query({
   args: {},
   handler: async (ctx) => {
+    // Owner-only board: hidden from everyone else (see convex/companies.ts).
+    if (!(await isOwner(ctx))) return [];
     return await ctx.db.query("netsmartJobs").order("desc").collect();
   },
 });

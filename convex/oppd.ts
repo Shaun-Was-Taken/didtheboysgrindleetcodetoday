@@ -1,6 +1,7 @@
 import { internalAction, internalMutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
+import { isOwner } from "./access";
 
 // OPPD (Omaha Public Power District) runs an Oracle PeopleSoft Fluid Candidate
 // Gateway rather than a clean JSON API. There is no public endpoint, so we have
@@ -233,6 +234,8 @@ export const saveOppdJobs = internalMutation({
 export const getJobs = query({
   args: {},
   handler: async (ctx) => {
+    // Owner-only board: hidden from everyone else (see convex/companies.ts).
+    if (!(await isOwner(ctx))) return [];
     return await ctx.db.query("oppdJobs").order("desc").collect();
   },
 });

@@ -18,15 +18,20 @@ import OppdJobs from "./OppdJobs";
 import HRBlockJobs from "./HRBlockJobs";
 import NetsmartJobs from "./NetsmartJobs";
 import GMJobs from "./GMJobs";
+import { useIsOwner } from "@/hooks/useIsOwner";
 
 export default function JobBoardGrid() {
+  // Owner-only boards (Garmin, WellSky, OPPD, H&R Block, Netsmart) are hidden
+  // from everyone else; their Convex queries are gated server-side too.
+  const isOwner = useIsOwner();
+
   return (
     <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 max-w-7xl mx-auto">
-      <GarminJobs />
+      {isOwner && <GarminJobs />}
       <AmazonJobs />
       <MicrosoftJobs />
       <AtlassianJobs />
-      <WellSkyJobs />
+      {isOwner && <WellSkyJobs />}
       <TMobileJobs />
       <GoogleJobs />
       <NvidiaJobs />
@@ -36,9 +41,9 @@ export default function JobBoardGrid() {
       <AppleJobs />
       <OpenAIJobs />
       <AnthropicJobs />
-      <OppdJobs />
-      <HRBlockJobs />
-      <NetsmartJobs />
+      {isOwner && <OppdJobs />}
+      {isOwner && <HRBlockJobs />}
+      {isOwner && <NetsmartJobs />}
       <GMJobs />
     </div>
   );

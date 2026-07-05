@@ -13,6 +13,7 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
+import type * as access from "../access.js";
 import type * as amazon from "../amazon.js";
 import type * as anthropic from "../anthropic.js";
 import type * as apple from "../apple.js";
@@ -55,6 +56,7 @@ import type * as wellsky from "../wellsky.js";
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  access: typeof access;
   amazon: typeof amazon;
   anthropic: typeof anthropic;
   apple: typeof apple;

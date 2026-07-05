@@ -6,7 +6,12 @@ import { useMutation, useQuery } from "convex/react";
 import { Bell, BellRing, Lock } from "lucide-react";
 import { api } from "../../convex/_generated/api";
 import { usePremium } from "@/hooks/usePremium";
-import { TRACKED_COMPANIES, companyLogoUrl } from "@/lib/companies";
+import { useIsOwner } from "@/hooks/useIsOwner";
+import {
+  TRACKED_COMPANIES,
+  companyLogoUrl,
+  isPrivateCompany,
+} from "@/lib/companies";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -25,6 +30,10 @@ import {
  */
 export default function ManageAlertsDialog() {
   const { isSignedIn, isPremium } = usePremium();
+  const isOwner = useIsOwner();
+  const companies = TRACKED_COMPANIES.filter(
+    (c) => isOwner || !isPrivateCompany(c.name)
+  );
   const myAlerts = useQuery(
     api.jobAlerts.getMyAlerts,
     isSignedIn ? {} : "skip"
@@ -75,8 +84,8 @@ export default function ManageAlertsDialog() {
             <Lock className="mx-auto mb-3 h-6 w-6 text-muted-foreground" />
             <p className="mb-4 text-sm text-muted-foreground">
               Upgrade to get instant emails when any of the{" "}
-              {TRACKED_COMPANIES.length} tracked companies posts a new role —
-              you choose which ones.
+              {companies.length} tracked companies posts a new role — you
+              choose which ones.
             </p>
             <Button asChild className="rounded-full">
               <Link href="/upgrade">Upgrade to Premium</Link>
@@ -84,7 +93,7 @@ export default function ManageAlertsDialog() {
           </div>
         ) : (
           <ul className="divide-y divide-border">
-            {TRACKED_COMPANIES.map(({ name, domain }) => {
+            {companies.map(({ name, domain }) => {
               const on = subscribed.has(name);
               return (
                 <li key={name} className="flex items-center gap-3 py-2.5">

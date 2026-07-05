@@ -2,6 +2,7 @@ import { internalAction, internalMutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import { isSoftwareEngineer } from "./jobFetchers";
+import { isOwner } from "./access";
 
 // H&R Block runs its careers portal on iCIMS (careers-hrblock.icims.com). There's
 // no clean JSON API, so we hit the public job-search page and parse the results
@@ -173,6 +174,8 @@ export const saveHRBlockJobs = internalMutation({
 export const getJobs = query({
   args: {},
   handler: async (ctx) => {
+    // Owner-only board: hidden from everyone else (see convex/companies.ts).
+    if (!(await isOwner(ctx))) return [];
     return await ctx.db.query("hrblockJobs").order("desc").collect();
   },
 });

@@ -28,3 +28,27 @@ export const TRACKED_COMPANIES = [
 export const TRACKED_COMPANY_NAMES: string[] = TRACKED_COMPANIES.map(
   (c) => c.name
 );
+
+/**
+ * Companies tracked for the site owner personally. Their boards, landing-page
+ * logos, alert toggles, and job data are hidden from everyone else.
+ */
+export const OWNER_EMAIL = "ssubat0628@gmail.com";
+export const PRIVATE_COMPANY_NAMES: string[] = [
+  "Garmin",
+  "WellSky",
+  "OPPD",
+  "H&R Block",
+  "Netsmart",
+];
+
+export function isPrivateCompany(name: string): boolean {
+  return PRIVATE_COMPANY_NAMES.includes(name);
+}
+
+/** Company names visible to a given user (owner sees everything). */
+export function visibleCompanyNames(isOwner: boolean): string[] {
+  return isOwner
+    ? TRACKED_COMPANY_NAMES
+    : TRACKED_COMPANY_NAMES.filter((c) => !isPrivateCompany(c));
+}
