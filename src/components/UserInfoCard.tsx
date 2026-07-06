@@ -25,7 +25,9 @@ const UserInfoCard = ({
 
   const handleBillingPortal = async () => {
     if (!user) return;
-    const { url } = await createBillingPortal();
+    const { url } = await createBillingPortal({
+      origin: window.location.origin,
+    });
     window.location.href = url;
   };
 

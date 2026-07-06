@@ -143,6 +143,27 @@ export const devSetSubscriptionStatus = internalMutation({
   },
 });
 
+export const setStripeCustomerId = internalMutation({
+  args: {
+    clerkId: v.string(),
+    stripeCustomerID: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_clerkId", (q) => q.eq("clerkId", args.clerkId))
+      .unique();
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    await ctx.db.patch(user._id, {
+      stripeCustomerID: args.stripeCustomerID,
+    });
+  },
+});
+
 export const updateUserSubscription = internalMutation({
   args: {
     stripeCustomerId: v.string(),

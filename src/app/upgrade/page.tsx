@@ -54,7 +54,7 @@ export default function UpgradePage() {
   const handleBilling = async () => {
     setBusy(true);
     try {
-      const { url } = await billingPortal();
+      const { url } = await billingPortal({ origin: window.location.origin });
       window.location.href = url;
     } catch {
       setError("Could not open the billing portal. Please try again.");

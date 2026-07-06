@@ -7,6 +7,7 @@ Tracks posts already suggested by the `reddit-engagement` skill (never re-sugges
 - u/(OP of 1umk16o) — r/csMajors "Rising seniors/new grads, 0 internships" — wants to build an accountability group chat; independently wants what the app does. https://www.reddit.com/r/csMajors/comments/1umk16o/
 - OP of 1umitze — r/leetcode "June LeetCode Recap (2026)" — 6-YOE engineer manually posting monthly accountability recaps. https://www.reddit.com/r/leetcode/comments/1umitze/
 - OP of 1unia4i — r/csMajors "compiled repo for 2027 new grad jobs?" — directly asked for a job-posting resource. https://www.reddit.com/r/csMajors/comments/1unia4i/
+- u/Blueslayer99 — r/leetcode "Start of 2nd Year B.Tech Checkpoint" — posting public yearly accountability checkpoints, 600+ problems; manually doing what the app automates. https://www.reddit.com/r/leetcode/comments/1unyq4u/
 
 ## Suggested posts
 
@@ -37,3 +38,17 @@ Tracks posts already suggested by the `reddit-engagement` skill (never re-sugges
 - 1ung2w7 — r/csMajors — when to apply to internships (timing; verify vs Convex posting data)
 - 1unmkzs — r/csMajors — best method for new grad job with no internships (claim thread; verify vs data)
 - 1un4pww — r/csMajors — what problems need a brute-force/OS-style tool (optional builder comment)
+
+### 2026-07-05 (revised: on-thesis selection rule added to skill this day)
+- 1unw7d4 — r/leetcode — made it to round 3 but withdrawing (Thesis A: sustainable grind)
+- 1uo1ji0 — r/csMajors — financially struggling, all-in for Amazon or play it safe (Thesis B)
+- 1unuzth — r/leetcode — can't do Leetcode at all (optional; consistency-forward angle only)
+- 1unp8xy — r/leetcode — 2nd-year role confusion (dropped: off-thesis)
+- 1unso7g — r/leetcode — hidden anti-AI prompts (dropped: off-thesis)
+- 1unatq6 — r/leetcode — contest joke post (checked, skipped)
+
+### 2026-07-05 (session 2)
+- 1uog8h4 — r/csMajors — when do FAANG intern apps come out (Thesis B bullseye; soft-mention judgment call)
+- 1uoaxpc — r/leetcode — choked and bombed another OA, how to bounce back (Thesis A)
+- 1uoblwj — r/csMajors — time is running out, friends are ahead (Thesis A)
+- 1unyq4u — r/leetcode — 2nd-year public checkpoint post, back in one year (future user; DM candidate)

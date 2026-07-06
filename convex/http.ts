@@ -153,6 +153,34 @@ const stripeWebhook = httpAction(async (ctx, request) => {
         });
 
         break;
+
+      case "customer.subscription.updated": {
+        // Catches lifecycle changes created/deleted miss: past_due, unpaid,
+        // canceled, or a recovery back to active.
+        const customerUpdated = event.data.object.customer as string;
+
+        const userUpdated = await ctx.runQuery(
+          internal.user.getUserByStripeCustomerId,
+          {
+            stripeCustomerId: customerUpdated,
+          }
+        );
+
+        if (!userUpdated) {
+          return new Response("User not found", { status: 404 });
+        }
+
+        const stripeStatus = event.data.object.status;
+        await ctx.runMutation(internal.user.updateUserSubscription, {
+          stripeCustomerId: customerUpdated,
+          stripeSubscriptionStatus:
+            stripeStatus === "active" || stripeStatus === "trialing"
+              ? "active"
+              : "inactive",
+          stripeSubscriptionId: event.data.object.id,
+        });
+        break;
+      }
       case "checkout.session.completed":
         const session = event.data.object;
         if (session.mode === "payment") {
