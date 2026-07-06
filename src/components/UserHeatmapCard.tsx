@@ -18,6 +18,13 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog"; // Import Dialog components
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type SubmissionData = CalendarHeatmap.ReactCalendarHeatmapValue<string> & {
   date: string;
@@ -55,10 +62,19 @@ export default function UserHeatmapCard({
     userName === undefined && userId ? { userId } : "skip"
   ) || { name: "User", imageUrl: "" };
 
-  // Calculate date range for heatmap (current calendar year)
+  // Years that have submission data (always include the current year)
   const currentYear = new Date().getFullYear();
-  const startDate = new Date(currentYear, 0, 1); // January 1st
-  const endDate = new Date(currentYear, 11, 31); // December 31st
+  const [selectedYear, setSelectedYear] = useState(currentYear);
+  const availableYears = Array.from(
+    new Set([
+      currentYear,
+      ...submissions.map((sub) => parseInt(sub.submissionDate.slice(0, 4), 10)),
+    ])
+  ).sort((a, b) => b - a);
+
+  // Calculate date range for heatmap (selected calendar year)
+  const startDate = new Date(selectedYear, 0, 1); // January 1st
+  const endDate = new Date(selectedYear, 11, 31); // December 31st
 
   // Format data for heatmap
   const submissionsByDate = submissions.reduce(
@@ -162,17 +178,34 @@ export default function UserHeatmapCard({
   return (
     <Card className="w-full overflow-hidden transition-shadow hover:shadow-md">
       <CardHeader className="pb-0">
-        <div className="flex items-center gap-3">
-          <Avatar className="h-10 w-10 border border-muted">
-            <AvatarImage src={displayImage} alt={displayName} />
-            <AvatarFallback>{getInitials()}</AvatarFallback>
-          </Avatar>
-          <div>
-            <h3 className="font-medium">{displayName}</h3>
-            <p className="text-xs text-muted-foreground">
-              {totalSubmissions} submissions
-            </p>
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <Avatar className="h-10 w-10 border border-muted">
+              <AvatarImage src={displayImage} alt={displayName} />
+              <AvatarFallback>{getInitials()}</AvatarFallback>
+            </Avatar>
+            <div>
+              <h3 className="font-medium">{displayName}</h3>
+              <p className="text-xs text-muted-foreground">
+                {totalSubmissions} submissions
+              </p>
+            </div>
           </div>
+          <Select
+            value={String(selectedYear)}
+            onValueChange={(year) => setSelectedYear(parseInt(year, 10))}
+          >
+            <SelectTrigger className="w-[90px] h-8 text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {availableYears.map((year) => (
+                <SelectItem key={year} value={String(year)}>
+                  {year}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </CardHeader>
       <CardContent className="pt-4">

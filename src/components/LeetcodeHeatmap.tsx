@@ -9,6 +9,13 @@ import "react-calendar-heatmap/dist/styles.css";
 import { useState } from "react";
 import { Card } from "./ui/card";
 import { Badge } from "./ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
 
 type SubmissionData = {
   date: string;
@@ -28,10 +35,21 @@ export default function LeetcodeHeatmap() {
     isSignedIn ? { userId: user?.id || "" } : "skip"
   );
 
-  // Calculate date range for heatmap (current calendar year)
+  // Years that have submission data (always include the current year)
   const currentYear = new Date().getFullYear();
-  const startDate = new Date(currentYear, 0, 1); // January 1st
-  const endDate = new Date(currentYear, 11, 31); // December 31st
+  const [selectedYear, setSelectedYear] = useState(currentYear);
+  const availableYears = Array.from(
+    new Set([
+      currentYear,
+      ...(submissions?.map((sub) =>
+        parseInt(sub.submissionDate.slice(0, 4), 10)
+      ) ?? []),
+    ])
+  ).sort((a, b) => b - a);
+
+  // Calculate date range for heatmap (selected calendar year)
+  const startDate = new Date(selectedYear, 0, 1); // January 1st
+  const endDate = new Date(selectedYear, 11, 31); // December 31st
 
   // Format data for heatmap
   const submissionsByDate = submissions?.reduce(
@@ -127,7 +145,24 @@ export default function LeetcodeHeatmap() {
 
   return (
     <div className="w-full p-4 relative">
-      <h2 className="text-xl font-bold mb-4">Your LeetCode Grinding History</h2>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xl font-bold">Your LeetCode Grinding History</h2>
+        <Select
+          value={String(selectedYear)}
+          onValueChange={(year) => setSelectedYear(parseInt(year, 10))}
+        >
+          <SelectTrigger className="w-[90px] h-8 text-xs">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {availableYears.map((year) => (
+              <SelectItem key={year} value={String(year)}>
+                {year}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
       <div className="w-full overflow-x-auto">
         <CalendarHeatmap
           startDate={startDate}

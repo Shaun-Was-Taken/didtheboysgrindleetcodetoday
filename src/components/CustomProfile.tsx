@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { SignOutButton, useUser } from "@clerk/nextjs";
 import { CreditCard, LogOut } from "lucide-react";
+import Link from "next/link";
 
 const CustomProfile = () => {
   const { user, isLoaded } = useUser();
@@ -33,9 +34,11 @@ const CustomProfile = () => {
         <DropdownMenuLabel>My Account</DropdownMenuLabel>
         <DropdownMenuSeparator />
 
-        <DropdownMenuItem>
-          <CreditCard className="mr-2 h-4 w-4" />
-          Billing
+        <DropdownMenuItem asChild>
+          <Link href="/upgrade">
+            <CreditCard className="mr-2 h-4 w-4" />
+            Billing
+          </Link>
         </DropdownMenuItem>
         <SignOutButton>
           <DropdownMenuItem>

@@ -29,6 +29,16 @@ export const sendNewJobsEmail = internalAction({
     ),
   },
   handler: async (ctx, args) => {
+    // Both the dev and prod deployments run the same hourly crons, so email
+    // delivery is opt-in per deployment: only the one with SEND_JOB_EMAILS=true
+    // (prod) actually sends. Otherwise every alert would arrive twice.
+    if (process.env.SEND_JOB_EMAILS !== "true") {
+      console.log(
+        "SEND_JOB_EMAILS != 'true' on this deployment; skipping email send."
+      );
+      return { status: "skipped", sent: 0 };
+    }
+
     const apiKey = process.env.RESEND_API_KEY;
     if (!apiKey) {
       console.error(

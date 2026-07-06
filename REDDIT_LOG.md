@@ -8,6 +8,10 @@ Tracks posts already suggested by the `reddit-engagement` skill (never re-sugges
 - OP of 1umitze — r/leetcode "June LeetCode Recap (2026)" — 6-YOE engineer manually posting monthly accountability recaps. https://www.reddit.com/r/leetcode/comments/1umitze/
 - OP of 1unia4i — r/csMajors "compiled repo for 2027 new grad jobs?" — directly asked for a job-posting resource. https://www.reddit.com/r/csMajors/comments/1unia4i/
 - u/Blueslayer99 — r/leetcode "Start of 2nd Year B.Tech Checkpoint" — posting public yearly accountability checkpoints, 600+ problems; manually doing what the app automates. https://www.reddit.com/r/leetcode/comments/1unyq4u/
+- u/Total_Exchange_3711 — r/csMajors "How do I actually start?" — explicitly asking for a consistency/self-development system; wants what the app provides. https://www.reddit.com/r/csMajors/comments/1uosxrn/
+- u/Infinite-Syrup2791 — r/csMajors "When do FAANG SWE intern apps come out?" — asking exactly what the hourly job board answers. https://www.reddit.com/r/csMajors/comments/1uog8h4/
+- u/StrikingSkill573 — r/csMajors "When to apply to internships" — posting-timing question; job-board audience. https://www.reddit.com/r/csMajors/comments/1ung2w7/
+- u/Affectionate_Run220 — r/leetcode "Grinding leetcode 7 months at 75 problems" — HOT LEAD, escalated 2026-07-06: asked in-thread to join Shaun's group ("can I join u guys? I done 30 mediums, UK based"). No cold DM needed; Shaun invited them to DM. Potential first organic user. https://www.reddit.com/r/leetcode/comments/1uos3im/
 
 ## Suggested posts
 
@@ -52,3 +56,11 @@ Tracks posts already suggested by the `reddit-engagement` skill (never re-sugges
 - 1uoaxpc — r/leetcode — choked and bombed another OA, how to bounce back (Thesis A)
 - 1uoblwj — r/csMajors — time is running out, friends are ahead (Thesis A)
 - 1unyq4u — r/leetcode — 2nd-year public checkpoint post, back in one year (future user; DM candidate)
+
+### 2026-07-06
+- 1uos3im — r/leetcode — grinding 7 months at 75 problems, shall I drop? (Thesis A)
+- 1uosxrn — r/csMajors — how do I actually start? consistency question (Thesis A; DM candidate)
+- 1uocsgg — r/leetcode — starting leetcode, can't do two sum (Thesis A)
+- 1uoiv49 — r/csMajors — burned out and hopeless, AAS + bachelors requirements (Thesis B-lite; judgment call)
+- 1uoyrp6 — r/leetcode — I built CodeDuels 1v1 coding battles (builder comment + recon)
+- 1uop0fq — r/leetcode — Boggle game builder post (checked, skipped — story post, less thesis-adjacent)
