@@ -45,7 +45,11 @@ const clerkWebhook = httpAction(async (ctx, request) => {
     const { id, email_addresses, first_name, last_name, image_url } =
       event.data;
     const email = email_addresses[0].email_address;
-    const name = `${first_name} ${last_name}`;
+    // first/last name can each be null (e.g. Google accounts with no last
+    // name) — template literals would stringify them as "null".
+    const name =
+      [first_name, last_name].filter(Boolean).join(" ") ||
+      email.split("@")[0];
 
     try {
       const customer = await stripe.customers.create({
@@ -69,7 +73,9 @@ const clerkWebhook = httpAction(async (ctx, request) => {
     const { id, email_addresses, first_name, last_name, image_url } =
       event.data;
     const email = email_addresses[0].email_address;
-    const name = `${first_name} ${last_name}`;
+    const name =
+      [first_name, last_name].filter(Boolean).join(" ") ||
+      email.split("@")[0];
     try {
       await ctx.runMutation(internal.user.updateUser, {
         clerkId: id,

@@ -143,6 +143,30 @@ export const devSetSubscriptionStatus = internalMutation({
   },
 });
 
+/**
+ * Admin helper: set a user's display name by email. Note the Clerk
+ * user.updated webhook overwrites this if the user edits their Clerk
+ * profile — set it in Clerk too for a permanent change.
+ *   npx convex run [--prod] user:devSetDisplayName '{"email":"x@y.com","name":"New Name"}'
+ */
+export const devSetDisplayName = internalMutation({
+  args: {
+    email: v.string(),
+    name: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_email", (q) => q.eq("email", args.email))
+      .unique();
+    if (!user) {
+      throw new Error(`No user with email ${args.email}`);
+    }
+    await ctx.db.patch(user._id, { name: args.name });
+    return { email: args.email, name: args.name };
+  },
+});
+
 export const setStripeCustomerId = internalMutation({
   args: {
     clerkId: v.string(),
