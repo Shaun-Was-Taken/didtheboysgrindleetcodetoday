@@ -1,48 +1,8 @@
-import { mutation, query } from "./_generated/server";
+import { query } from "./_generated/server";
 import { v } from "convex/values";
 
-export const addSubmission = mutation({
-  args: {
-    userId: v.string(),
-    problemTitle: v.string(),
-    submissionDate: v.string(),
-    screenshotUrl: v.optional(v.string()),
-    difficulty: v.optional(v.string()),
-  },
-  handler: async (ctx, args) => {
-    const submissionId = await ctx.db.insert("leetcodeSubmissions", {
-      userId: args.userId,
-      problemTitle: args.problemTitle,
-      submissionDate: args.submissionDate,
-      screenshotUrl: args.screenshotUrl,
-      difficulty: args.difficulty,
-      source: "screenshot",
-    });
-
-    // Update daily completion count
-    const todayDate = args.submissionDate; // Assuming submissionDate is YYYY-MM-DD
-    const existingCompletion = await ctx.db
-      .query("dailyCompletions")
-      .withIndex("by_user_date", (q) =>
-        q.eq("userId", args.userId).eq("date", todayDate)
-      )
-      .unique();
-
-    if (existingCompletion) {
-      await ctx.db.patch(existingCompletion._id, {
-        count: existingCompletion.count + 1,
-      });
-    } else {
-      await ctx.db.insert("dailyCompletions", {
-        userId: args.userId,
-        date: todayDate,
-        count: 1,
-      });
-    }
-
-    return submissionId;
-  },
-});
+// Manual screenshot submissions were removed (too easy to abuse): solves now
+// come exclusively from the LeetCode auto-sync (see leetcodeSync.ts).
 
 export const getSubmissionsByUser = query({
   args: { userId: v.string() },

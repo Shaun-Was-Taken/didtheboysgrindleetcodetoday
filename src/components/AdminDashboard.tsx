@@ -58,6 +58,7 @@ function MiniBarChart({
   data: { date: string; value: number }[];
 }) {
   const max = Math.max(1, ...data.map((d) => d.value));
+  const BAR_AREA_PX = 88; // tallest bar, leaving room for the count label
   return (
     <div>
       <div className="flex items-end gap-1 h-28">
@@ -73,8 +74,10 @@ function MiniBarChart({
             <div
               className="w-full rounded-t bg-primary/80"
               style={{
-                height: `${(d.value / max) * 88}%`,
-                minHeight: d.value > 0 ? "4px" : "1px",
+                height: `${Math.max(
+                  Math.round((d.value / max) * BAR_AREA_PX),
+                  d.value > 0 ? 4 : 1
+                )}px`,
               }}
             />
           </div>

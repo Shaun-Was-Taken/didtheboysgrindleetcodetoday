@@ -35,7 +35,7 @@ const Header = () => {
                 href="/upload"
                 className="text-sm font-medium hover:text-primary transition-colors"
               >
-                Upload Progress
+                Sync LeetCode
               </Link>
             )}
             {isSignedIn && (

@@ -1,4 +1,3 @@
-import SubmissionForm from "@/components/SubmissionForm";
 import ConnectLeetcode from "@/components/ConnectLeetcode";
 import { Card } from "@/components/ui/card";
 
@@ -10,17 +9,13 @@ export default function UploadPage() {
           Track Your LeetCode Progress
         </h1>
         <p className="mx-auto mb-8 max-w-xl text-center text-muted-foreground">
-          Connect your username for automatic syncing, or upload a screenshot
-          manually.
+          Connect your LeetCode username and your solves sync automatically —
+          no manual uploads needed.
         </p>
 
-        <div className="mx-auto mb-8 max-w-2xl">
-          <ConnectLeetcode />
-        </div>
-
-        <div className="flex flex-col md:flex-row justify-between w-full gap-6">
+        <div className="flex flex-col md:flex-row justify-center w-full gap-6 max-w-4xl mx-auto">
           <div className="flex-1">
-            <SubmissionForm />
+            <ConnectLeetcode />
           </div>
           <div className="flex-1">
             <Card className="p-6">
