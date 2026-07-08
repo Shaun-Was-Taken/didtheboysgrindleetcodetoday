@@ -5,9 +5,11 @@ import { SignInButton, useAuth } from "@clerk/nextjs";
 import CustomProfile from "./CustomProfile";
 import Link from "next/link";
 import { ModeToggle } from "./ModeToggle";
+import { useIsOwner } from "@/hooks/useIsOwner";
 
 const Header = () => {
   const { isSignedIn } = useAuth();
+  const isOwner = useIsOwner();
 
   return (
     <header className="py-6 px-6 md:px-12 w-full">
@@ -58,6 +60,14 @@ const Header = () => {
             >
               Upgrade
             </Link>
+            {isOwner && (
+              <Link
+                href="/admin"
+                className="text-sm font-medium hover:text-primary transition-colors"
+              >
+                Admin
+              </Link>
+            )}
           </nav>
 
           <ModeToggle />

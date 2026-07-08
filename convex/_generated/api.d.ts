@@ -14,6 +14,7 @@ import type {
   FunctionReference,
 } from "convex/server";
 import type * as access from "../access.js";
+import type * as admin from "../admin.js";
 import type * as airbnb from "../airbnb.js";
 import type * as amazon from "../amazon.js";
 import type * as anthropic from "../anthropic.js";
@@ -63,6 +64,7 @@ import type * as wellsky from "../wellsky.js";
  */
 declare const fullApi: ApiFromModules<{
   access: typeof access;
+  admin: typeof admin;
   airbnb: typeof airbnb;
   amazon: typeof amazon;
   anthropic: typeof anthropic;
