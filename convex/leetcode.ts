@@ -1,8 +1,88 @@
-import { query } from "./_generated/server";
-import { v } from "convex/values";
+import { mutation, query } from "./_generated/server";
+import { ConvexError, v } from "convex/values";
 
-// Manual screenshot submissions were removed (too easy to abuse): solves now
-// come exclusively from the LeetCode auto-sync (see leetcodeSync.ts).
+// Screenshot/file uploads were removed (abuse risk) — manual submissions are
+// text-only. The caller's identity comes from auth, never from an argument.
+
+// Manual solves a single user can log per day before we assume spam.
+const MANUAL_DAILY_CAP = 25;
+
+export const addSubmission = mutation({
+  args: {
+    problemTitle: v.string(),
+    submissionDate: v.string(),
+    difficulty: v.optional(
+      v.union(v.literal("Easy"), v.literal("Medium"), v.literal("Hard"))
+    ),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new ConvexError("You must be signed in.");
+    const userId = identity.subject;
+
+    const problemTitle = args.problemTitle.trim();
+    if (problemTitle.length < 3 || problemTitle.length > 120) {
+      throw new ConvexError("Problem title must be 3-120 characters.");
+    }
+
+    // The client sends its Central-time "today" (see src/lib/today.ts); accept
+    // only dates within a day of server UTC time so solves can't be backdated.
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(args.submissionDate)) {
+      throw new ConvexError("Invalid date.");
+    }
+    const dayMs = 24 * 60 * 60 * 1000;
+    const sent = Date.parse(`${args.submissionDate}T00:00:00Z`);
+    if (Number.isNaN(sent) || Math.abs(sent - Date.now()) > 2 * dayMs) {
+      throw new ConvexError("Submission date must be today.");
+    }
+
+    const sameDay = (
+      await ctx.db
+        .query("leetcodeSubmissions")
+        .withIndex("by_userId", (q) => q.eq("userId", userId))
+        .collect()
+    ).filter((s) => s.submissionDate === args.submissionDate);
+    if (sameDay.length >= MANUAL_DAILY_CAP) {
+      throw new ConvexError("Daily submission limit reached.");
+    }
+    // Re-logging the same problem on the same day is a no-op.
+    if (
+      sameDay.some(
+        (s) => s.problemTitle.toLowerCase() === problemTitle.toLowerCase()
+      )
+    ) {
+      throw new ConvexError("You already logged that problem today.");
+    }
+
+    const submissionId = await ctx.db.insert("leetcodeSubmissions", {
+      userId,
+      problemTitle,
+      submissionDate: args.submissionDate,
+      difficulty: args.difficulty,
+      source: "manual",
+    });
+
+    const existingCompletion = await ctx.db
+      .query("dailyCompletions")
+      .withIndex("by_user_date", (q) =>
+        q.eq("userId", userId).eq("date", args.submissionDate)
+      )
+      .unique();
+    if (existingCompletion) {
+      await ctx.db.patch(existingCompletion._id, {
+        count: existingCompletion.count + 1,
+      });
+    } else {
+      await ctx.db.insert("dailyCompletions", {
+        userId,
+        date: args.submissionDate,
+        count: 1,
+      });
+    }
+
+    return submissionId;
+  },
+});
 
 export const getSubmissionsByUser = query({
   args: { userId: v.string() },
