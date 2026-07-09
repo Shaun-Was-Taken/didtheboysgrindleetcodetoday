@@ -185,14 +185,23 @@ export const getJobs = query({
   },
 });
 
+// Deletes in batches and reschedules itself, since a full-table sweep can
+// exceed the per-mutation read limit (the old Adzuna table grew past 6k rows).
+// One invocation still clears everything.
 export const clearAllJobs = internalMutation({
   args: {},
   handler: async (ctx) => {
-    const jobs = await ctx.db.query("microsoftJobs").collect();
+    const BATCH = 2000;
+    const jobs = await ctx.db.query("microsoftJobs").take(BATCH);
     for (const job of jobs) {
       await ctx.db.delete(job._id);
     }
-    console.log(`Deleted ${jobs.length} Microsoft jobs`);
+    if (jobs.length === BATCH) {
+      await ctx.scheduler.runAfter(0, internal.microsoft.clearAllJobs, {});
+      console.log(`Deleted ${jobs.length} Microsoft jobs; scheduled next batch.`);
+    } else {
+      console.log(`Deleted ${jobs.length} Microsoft jobs (table now empty).`);
+    }
     return jobs.length;
   },
 });
