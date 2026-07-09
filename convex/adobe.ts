@@ -3,53 +3,58 @@ import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import { fetchWorkdayJobs } from "./jobFetchers";
 
-// NVIDIA's Workday tenant is global, so we restrict to the US country facet.
-const US_COUNTRY_FACET = "2fcb99c455831013ea52fb338f2932d8";
-const US_FACET_KEY = "locationHierarchy1";
+// Adobe's Workday tenant is global (careers.adobe.com is just a Phenom shell
+// over it), so we restrict to the standard US country facet. Note the intern
+// board is a separate Workday site; `external_experienced` is the main one.
+const US_COUNTRY_FACET = "bc33aa3152ec42d4995f4791a106ed09";
 
-export const fetchNvidiaJobs = internalAction({
+export const fetchAdobeJobs = internalAction({
   args: {},
   handler: async (ctx) => {
-    console.log("Fetching NVIDIA jobs from Workday...");
+    console.log("Fetching Adobe jobs from Workday...");
 
     let jobs;
     try {
       jobs = await fetchWorkdayJobs({
-        tenant: "nvidia",
+        tenant: "adobe",
         host: "wd5",
-        site: "NVIDIAExternalCareerSite",
-        appliedFacets: { [US_FACET_KEY]: [US_COUNTRY_FACET] },
+        site: "external_experienced",
+        appliedFacets: { locationCountry: [US_COUNTRY_FACET] },
       });
     } catch (error) {
-      console.error("Error fetching NVIDIA jobs:", error);
+      console.error("Error fetching Adobe jobs:", error);
       return { status: "error", message: String(error) };
     }
 
-    console.log(`Found ${jobs.length} NVIDIA jobs matching criteria`);
+    console.log(`Found ${jobs.length} Adobe jobs matching criteria`);
 
     if (jobs.length > 0) {
       const newJobs: { title: string; link: string; location?: string }[] =
-        await ctx.runMutation(internal.nvidia.saveNvidiaJobs, { jobs });
+        await ctx.runMutation(internal.adobe.saveAdobeJobs, { jobs });
 
-      if (newJobs.length > 0) {
-        console.log(`🎉 Found ${newJobs.length} NEW NVIDIA job(s)!`);
+      // When EVERY fetched job is new the table was empty (first run), not a
+      // real posting burst — seed silently, no email.
+      if (newJobs.length > 0 && newJobs.length === jobs.length) {
+        console.log(`Seeded ${newJobs.length} Adobe job(s); skipping alert email.`);
+      } else if (newJobs.length > 0) {
+        console.log(`🎉 Found ${newJobs.length} NEW Adobe job(s)!`);
         await ctx.runAction(internal.email.sendNewJobsEmail, {
-          company: "NVIDIA",
+          company: "Adobe",
           jobs: newJobs,
         });
       } else {
-        console.log("✅ No new NVIDIA jobs (all jobs already tracked)");
+        console.log("✅ No new Adobe jobs (all jobs already tracked)");
       }
 
       return { status: "success", jobsFound: jobs.length, newJobs: newJobs.length };
     }
 
-    console.log("✅ No NVIDIA jobs found");
+    console.log("✅ No Adobe jobs found");
     return { status: "success", jobsFound: 0, newJobs: 0 };
   },
 });
 
-export const saveNvidiaJobs = internalMutation({
+export const saveAdobeJobs = internalMutation({
   args: {
     jobs: v.array(
       v.object({
@@ -65,13 +70,13 @@ export const saveNvidiaJobs = internalMutation({
     const newJobs: { title: string; link: string; location?: string }[] = [];
     for (const job of args.jobs) {
       const existing = await ctx.db
-        .query("nvidiaJobs")
+        .query("adobeJobs")
         .withIndex("by_jobId", (q) => q.eq("jobId", job.jobId))
         .first();
       if (!existing) {
-        await ctx.db.insert("nvidiaJobs", job);
+        await ctx.db.insert("adobeJobs", job);
         newJobs.push({ title: job.title, link: job.link, location: job.location });
-        console.log(`New NVIDIA Job found: ${job.title} - ${job.link}`);
+        console.log(`New Adobe Job found: ${job.title} - ${job.link}`);
       }
     }
     return newJobs;
@@ -81,16 +86,16 @@ export const saveNvidiaJobs = internalMutation({
 export const getJobs = query({
   args: {},
   handler: async (ctx) => {
-    return await ctx.db.query("nvidiaJobs").order("desc").take(200);
+    return await ctx.db.query("adobeJobs").order("desc").take(200);
   },
 });
 
 export const clearAllJobs = internalMutation({
   args: {},
   handler: async (ctx) => {
-    const jobs = await ctx.db.query("nvidiaJobs").collect();
+    const jobs = await ctx.db.query("adobeJobs").collect();
     for (const job of jobs) await ctx.db.delete(job._id);
-    console.log(`Deleted ${jobs.length} NVIDIA jobs`);
+    console.log(`Deleted ${jobs.length} Adobe jobs`);
     return jobs.length;
   },
 });

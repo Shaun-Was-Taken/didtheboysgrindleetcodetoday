@@ -116,7 +116,7 @@ export const saveAtlassianJobs = internalMutation({
 export const getJobs = query({
   args: {},
   handler: async (ctx) => {
-    return await ctx.db.query("atlassianJobs").order("desc").collect();
+    return await ctx.db.query("atlassianJobs").order("desc").take(200);
   },
 });
 

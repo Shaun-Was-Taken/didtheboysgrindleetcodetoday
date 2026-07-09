@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Nunito, Fraunces } from "next/font/google";
+import { SITE_URL, SITE_NAME, SITE_DESCRIPTION } from "@/lib/site";
 import { ConvexClientProvider } from "@/provider/ConvexClientProvider";
 import Header from "@/components/Header";
 import "./globals.css";
@@ -31,9 +32,36 @@ const fraunces = Fraunces({
 });
 
 export const metadata: Metadata = {
-  title: "Did The Boys Grind LeetCode Today?",
-  description:
-    "Track your LeetCode grinding progress with a heatmap visualization",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: SITE_NAME,
+    template: `%s · ${SITE_NAME}`,
+  },
+  description: SITE_DESCRIPTION,
+  keywords: [
+    "leetcode tracker",
+    "leetcode accountability",
+    "leetcode heatmap",
+    "new grad software engineer jobs",
+    "software engineer job board",
+    "cs major job search",
+  ],
+  openGraph: {
+    type: "website",
+    url: SITE_URL,
+    siteName: SITE_NAME,
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({

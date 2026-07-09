@@ -90,7 +90,7 @@ export const getJobs = query({
   handler: async (ctx) => {
     // Owner-only board: hidden from everyone else (see convex/companies.ts).
     if (!(await isOwner(ctx))) return [];
-    return await ctx.db.query("netsmartJobs").order("desc").collect();
+    return await ctx.db.query("netsmartJobs").order("desc").take(200);
   },
 });
 

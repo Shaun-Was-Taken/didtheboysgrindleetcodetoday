@@ -1,84 +1,146 @@
 import { internalAction, internalMutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
+import { isSoftwareEngineer } from "./jobFetchers";
 
-const ADZUNA_APP_ID = "908d48e7";
-const ADZUNA_APP_KEY = "ea3bde2a25d0e33d947cf3c9696c6fb0";
+// Microsoft's careers site (apply.careers.microsoft.com) runs on Eightfold's
+// "PCSX" platform, whose search API is public JSON. This replaced the old
+// Adzuna aggregator source, which re-listed the same role under new ids and
+// bloated the table with duplicates. Eightfold position ids are stable, so
+// plain jobId dedupe works here.
+//
+// API quirks: page size is capped at 10 regardless of `num`, and requests
+// closer together than ~1s get rate-limited (empty 200 body) — hence the
+// pacing delay between pages.
+const PCSX_API = "https://apply.careers.microsoft.com/api/pcsx/search";
+const PAGE_SIZE = 10;
+const PAGE_DELAY_MS = 1500;
+
+interface PcsxPosition {
+  id: number;
+  name: string;
+  locations?: string[];
+  standardizedLocations?: string[];
+}
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 export const fetchMicrosoftJobs = internalAction({
   args: {},
   handler: async (ctx) => {
-    console.log("Fetching Microsoft jobs from Adzuna...");
-    
+    console.log("Fetching Microsoft (US) jobs from careers API...");
+
+    const allRelevantJobs: {
+      jobId: string;
+      title: string;
+      link: string;
+      location?: string;
+      firstSeen: string;
+    }[] = [];
+
     try {
-      const params = new URLSearchParams({
-        app_id: ADZUNA_APP_ID,
-        app_key: ADZUNA_APP_KEY,
-        results_per_page: "100",
-        what: "software engineer",
-        company: "microsoft",
-        where: "united states",
-        sort_by: "date", // Get newest first
-      });
-
-      const url = `https://api.adzuna.com/v1/api/jobs/us/search/1?${params.toString()}`;
-      
-      const response = await fetch(url);
-      if (!response.ok) {
-        console.error(`Failed to fetch Microsoft jobs: ${response.statusText}`);
-        return { status: "error", message: response.statusText };
-      }
-
-      const data = await response.json();
-      const jobs = data.results || [];
-      
-      console.log(`Found ${jobs.length} Microsoft jobs from Adzuna (${data.count} total available)`);
-
-      const jobsToSave = jobs.map((job: any) => {
-        // Extract location string from Adzuna location object
-        const location = job.location?.display_name || 
-                        job.location?.area?.join(", ") || 
-                        "United States";
-
-        return {
-          jobId: String(job.id),
-          title: job.title || "Unknown Title",
-          link: job.redirect_url || "",
-          location,
-          firstSeen: new Date().toISOString(),
-        };
-      });
-
-      if (jobsToSave.length > 0) {
-        const newJobs: { title: string; link: string; location?: string }[] = await ctx.runMutation(
-          internal.microsoft.saveMicrosoftJobs, 
-          { jobs: jobsToSave }
-        );
-        
-        if (newJobs.length > 0) {
-          console.log(`🎉 Found ${newJobs.length} NEW Microsoft job(s)!`);
-          await ctx.runAction(internal.email.sendNewJobsEmail, {
-            company: "Microsoft",
-            jobs: newJobs,
-          });
-        } else {
-          console.log("✅ No new Microsoft jobs (all jobs already tracked)");
+      const MAX_PAGES = 40;
+      for (let page = 0; page < MAX_PAGES; page++) {
+        const start = page * PAGE_SIZE;
+        const params = new URLSearchParams({
+          domain: "microsoft.com",
+          filter_profession: "Software Engineering",
+          location: "United States",
+          start: String(start),
+          num: String(PAGE_SIZE),
+          sort_by: "timestamp",
+        });
+        const res = await fetch(`${PCSX_API}?${params.toString()}`, {
+          headers: { Accept: "application/json", "User-Agent": "Mozilla/5.0" },
+        });
+        if (!res.ok) {
+          console.error(
+            `Microsoft fetch failed (page ${page}): ${res.statusText}`,
+          );
+          break;
         }
-        
-        return { 
-          status: "success", 
-          jobsFound: jobsToSave.length, 
-          newJobs: newJobs.length,
-          totalAvailable: data.count 
-        };
-      }
 
-      console.log("✅ No Microsoft jobs found");
-      return { status: "success", jobsFound: 0, newJobs: 0, totalAvailable: 0 };
+        // Rate-limited responses come back as 200 with an empty body.
+        let data;
+        try {
+          data = JSON.parse(await res.text());
+        } catch {
+          console.warn(
+            `Microsoft fetch rate-limited on page ${page}; stopping early.`,
+          );
+          break;
+        }
+
+        const positions: PcsxPosition[] = data.data?.positions || [];
+        const total: number = data.data?.count ?? 0;
+        if (positions.length === 0) break;
+
+        for (const p of positions) {
+          const title = p.name || "Unknown Title";
+          if (!isSoftwareEngineer(title)) continue;
+          const location =
+            (p.standardizedLocations?.length
+              ? p.standardizedLocations
+              : p.locations || []
+            ).join(" / ") || undefined;
+          allRelevantJobs.push({
+            jobId: String(p.id),
+            title,
+            link: `https://apply.careers.microsoft.com/careers/job/${p.id}`,
+            location,
+            firstSeen: new Date().toISOString(),
+          });
+        }
+
+        if (start + positions.length >= total) break;
+        await sleep(PAGE_DELAY_MS);
+      }
     } catch (error) {
       console.error("Error fetching Microsoft jobs:", error);
       return { status: "error", message: String(error) };
     }
+
+    // Deduplicate by jobId
+    const seen = new Set<string>();
+    const uniqueJobs = allRelevantJobs.filter((job) => {
+      if (seen.has(job.jobId)) return false;
+      seen.add(job.jobId);
+      return true;
+    });
+
+    console.log(`Found ${uniqueJobs.length} Microsoft jobs matching criteria`);
+
+    if (uniqueJobs.length > 0) {
+      const newJobs: { title: string; link: string; location?: string }[] =
+        await ctx.runMutation(internal.microsoft.saveMicrosoftJobs, {
+          jobs: uniqueJobs,
+        });
+
+      // When EVERY fetched job is new the table was empty (first run or a
+      // source swap), not a real posting burst — seed silently, no email.
+      if (newJobs.length > 0 && newJobs.length === uniqueJobs.length) {
+        console.log(
+          `Seeded ${newJobs.length} Microsoft job(s); skipping alert email.`,
+        );
+      } else if (newJobs.length > 0) {
+        console.log(`🎉 Found ${newJobs.length} NEW Microsoft job(s)!`);
+        await ctx.runAction(internal.email.sendNewJobsEmail, {
+          company: "Microsoft",
+          jobs: newJobs,
+        });
+      } else {
+        console.log("✅ No new Microsoft jobs (all jobs already tracked)");
+      }
+
+      return {
+        status: "success",
+        jobsFound: uniqueJobs.length,
+        newJobs: newJobs.length,
+      };
+    }
+
+    console.log("✅ No Microsoft jobs found");
+    return { status: "success", jobsFound: 0, newJobs: 0 };
   },
 });
 
@@ -91,7 +153,7 @@ export const saveMicrosoftJobs = internalMutation({
         link: v.string(),
         location: v.optional(v.string()),
         firstSeen: v.string(),
-      })
+      }),
     ),
   },
   handler: async (ctx, args) => {
@@ -104,7 +166,11 @@ export const saveMicrosoftJobs = internalMutation({
 
       if (!existing) {
         await ctx.db.insert("microsoftJobs", job);
-        newJobs.push({ title: job.title, link: job.link, location: job.location });
+        newJobs.push({
+          title: job.title,
+          link: job.link,
+          location: job.location,
+        });
         console.log(`New Microsoft Job found: ${job.title} - ${job.location}`);
       }
     }
@@ -115,7 +181,7 @@ export const saveMicrosoftJobs = internalMutation({
 export const getJobs = query({
   args: {},
   handler: async (ctx) => {
-    return await ctx.db.query("microsoftJobs").order("desc").collect();
+    return await ctx.db.query("microsoftJobs").order("desc").take(200);
   },
 });
 

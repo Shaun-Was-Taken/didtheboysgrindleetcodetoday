@@ -72,7 +72,7 @@ export const savePinterestJobs = internalMutation({
 export const getJobs = query({
   args: {},
   handler: async (ctx) => {
-    return await ctx.db.query("pinterestJobs").order("desc").collect();
+    return await ctx.db.query("pinterestJobs").order("desc").take(200);
   },
 });
 

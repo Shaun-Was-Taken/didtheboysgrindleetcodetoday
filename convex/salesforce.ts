@@ -82,7 +82,7 @@ export const saveSalesforceJobs = internalMutation({
 export const getJobs = query({
   args: {},
   handler: async (ctx) => {
-    return await ctx.db.query("salesforceJobs").order("desc").collect();
+    return await ctx.db.query("salesforceJobs").order("desc").take(200);
   },
 });
 

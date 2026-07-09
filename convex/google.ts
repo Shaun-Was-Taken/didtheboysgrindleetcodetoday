@@ -72,7 +72,7 @@ export const saveGoogleJobs = internalMutation({
 export const getJobs = query({
   args: {},
   handler: async (ctx) => {
-    return await ctx.db.query("googleJobs").order("desc").collect();
+    return await ctx.db.query("googleJobs").order("desc").take(200);
   },
 });
 

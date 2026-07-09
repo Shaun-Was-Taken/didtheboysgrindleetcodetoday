@@ -141,6 +141,18 @@ crons.interval(
   internal.discord.fetchDiscordJobs
 );
 
+crons.interval(
+  "uber-job-monitor",
+  { hours: 1 },
+  internal.uber.fetchUberJobs
+);
+
+crons.interval(
+  "adobe-job-monitor",
+  { hours: 1 },
+  internal.adobe.fetchAdobeJobs
+);
+
 // Daily audit: flag fetchers whose title filter is silently dropping
 // software-ish postings (see convex/jobAudit.ts).
 crons.interval(

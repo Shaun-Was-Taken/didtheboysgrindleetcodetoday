@@ -72,7 +72,7 @@ export const saveDatadogJobs = internalMutation({
 export const getJobs = query({
   args: {},
   handler: async (ctx) => {
-    return await ctx.db.query("datadogJobs").order("desc").collect();
+    return await ctx.db.query("datadogJobs").order("desc").take(200);
   },
 });
 

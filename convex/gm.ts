@@ -160,7 +160,7 @@ export const saveGMJobs = internalMutation({
 export const getJobs = query({
   args: {},
   handler: async (ctx) => {
-    return await ctx.db.query("gmJobs").order("desc").collect();
+    return await ctx.db.query("gmJobs").order("desc").take(200);
   },
 });
 

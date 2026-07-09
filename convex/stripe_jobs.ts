@@ -72,7 +72,7 @@ export const saveStripeJobs = internalMutation({
 export const getJobs = query({
   args: {},
   handler: async (ctx) => {
-    return await ctx.db.query("stripeJobs").order("desc").collect();
+    return await ctx.db.query("stripeJobs").order("desc").take(200);
   },
 });
 

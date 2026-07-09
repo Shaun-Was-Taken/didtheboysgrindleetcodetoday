@@ -72,7 +72,7 @@ export const saveAirbnbJobs = internalMutation({
 export const getJobs = query({
   args: {},
   handler: async (ctx) => {
-    return await ctx.db.query("airbnbJobs").order("desc").collect();
+    return await ctx.db.query("airbnbJobs").order("desc").take(200);
   },
 });
 

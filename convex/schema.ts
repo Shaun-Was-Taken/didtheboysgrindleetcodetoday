@@ -71,7 +71,7 @@ export default defineSchema({
   }).index("by_jobId", ["jobId"]),
 
   microsoftJobs: defineTable({
-    jobId: v.string(), // Adzuna job ID
+    jobId: v.string(), // Eightfold position id (careers.microsoft.com)
     title: v.string(),
     link: v.string(),
     location: v.optional(v.string()),
@@ -232,6 +232,22 @@ export default defineSchema({
 
   gmJobs: defineTable({
     jobId: v.string(), // GM careers req id (jr-XXXXXXXXX)
+    title: v.string(),
+    link: v.string(),
+    location: v.optional(v.string()),
+    firstSeen: v.string(),
+  }).index("by_jobId", ["jobId"]),
+
+  uberJobs: defineTable({
+    jobId: v.string(), // Uber careers job id
+    title: v.string(),
+    link: v.string(),
+    location: v.optional(v.string()),
+    firstSeen: v.string(),
+  }).index("by_jobId", ["jobId"]),
+
+  adobeJobs: defineTable({
+    jobId: v.string(), // Workday externalPath
     title: v.string(),
     link: v.string(),
     location: v.optional(v.string()),

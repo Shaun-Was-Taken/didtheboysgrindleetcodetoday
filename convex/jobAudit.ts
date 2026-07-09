@@ -75,6 +75,59 @@ async function rawGarminTitles(maxPages = 10): Promise<string[]> {
   return titles;
 }
 
+// Newest ~50 Microsoft SWE-profession titles (page size is server-capped at 10
+// and rapid requests get rate-limited, so this samples with pacing).
+async function rawMicrosoftTitles(maxPages = 5): Promise<string[]> {
+  const titles: string[] = [];
+  for (let page = 0; page < maxPages; page++) {
+    const params = new URLSearchParams({
+      domain: "microsoft.com",
+      filter_profession: "Software Engineering",
+      location: "United States",
+      start: String(page * 10),
+      num: "10",
+      sort_by: "timestamp",
+    });
+    const res = await fetch(
+      `https://apply.careers.microsoft.com/api/pcsx/search?${params.toString()}`,
+      { headers: { Accept: "application/json", "User-Agent": BROWSER_UA } }
+    );
+    if (!res.ok) break;
+    let data;
+    try {
+      data = JSON.parse(await res.text());
+    } catch {
+      break; // rate-limited (empty 200 body)
+    }
+    const positions = data.data?.positions || [];
+    if (positions.length === 0) break;
+    for (const p of positions) titles.push(p.name || "");
+    await new Promise((r) => setTimeout(r, 1500));
+  }
+  return titles;
+}
+
+async function rawUberTitles(): Promise<string[]> {
+  const res = await fetch(
+    "https://www.uber.com/api/loadSearchJobsResults?localeCode=en",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        "x-csrf-token": "x",
+        "User-Agent": BROWSER_UA,
+      },
+      body: JSON.stringify({
+        params: { query: "", location: [{ country: "USA" }], limit: 2000, page: 0 },
+      }),
+    }
+  );
+  if (!res.ok) return [];
+  const data = await res.json();
+  return (data.data?.results || []).map((j: { title: string }) => j.title || "");
+}
+
 async function rawAtlassianTitles(): Promise<string[]> {
   const res = await fetch(
     "https://www.atlassian.com/endpoint/careers/listings",
@@ -186,6 +239,20 @@ const SOURCES: { company: string; getTitles: () => Promise<string[]> }[] = [
   { company: "Datadog", getTitles: () => rawGreenhouseTitles("datadog") },
   { company: "Duolingo", getTitles: () => rawGreenhouseTitles("duolingo") },
   { company: "Discord", getTitles: () => rawGreenhouseTitles("discord") },
+  {
+    company: "Adobe",
+    getTitles: () =>
+      rawWorkdayTitles({
+        tenant: "adobe",
+        host: "wd5",
+        site: "external_experienced",
+        appliedFacets: {
+          locationCountry: ["bc33aa3152ec42d4995f4791a106ed09"],
+        },
+      }),
+  },
+  { company: "Uber", getTitles: () => rawUberTitles() },
+  { company: "Microsoft", getTitles: () => rawMicrosoftTitles() },
   { company: "Atlassian", getTitles: () => rawAtlassianTitles() },
   { company: "GM", getTitles: () => rawGMTitles() },
   { company: "H&R Block", getTitles: () => rawHRBlockTitles() },

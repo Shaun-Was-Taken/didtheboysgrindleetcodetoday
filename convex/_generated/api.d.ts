@@ -15,6 +15,7 @@ import type {
 } from "convex/server";
 import type * as access from "../access.js";
 import type * as admin from "../admin.js";
+import type * as adobe from "../adobe.js";
 import type * as airbnb from "../airbnb.js";
 import type * as amazon from "../amazon.js";
 import type * as anthropic from "../anthropic.js";
@@ -50,6 +51,7 @@ import type * as salesforce from "../salesforce.js";
 import type * as stripe from "../stripe.js";
 import type * as stripe_jobs from "../stripe_jobs.js";
 import type * as tmobile from "../tmobile.js";
+import type * as uber from "../uber.js";
 import type * as user from "../user.js";
 import type * as wellsky from "../wellsky.js";
 
@@ -64,6 +66,7 @@ import type * as wellsky from "../wellsky.js";
 declare const fullApi: ApiFromModules<{
   access: typeof access;
   admin: typeof admin;
+  adobe: typeof adobe;
   airbnb: typeof airbnb;
   amazon: typeof amazon;
   anthropic: typeof anthropic;
@@ -99,6 +102,7 @@ declare const fullApi: ApiFromModules<{
   stripe: typeof stripe;
   stripe_jobs: typeof stripe_jobs;
   tmobile: typeof tmobile;
+  uber: typeof uber;
   user: typeof user;
   wellsky: typeof wellsky;
 }>;

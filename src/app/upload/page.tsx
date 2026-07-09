@@ -1,6 +1,14 @@
+import type { Metadata } from "next";
 import ConnectLeetcode from "@/components/ConnectLeetcode";
 import SubmissionForm from "@/components/SubmissionForm";
 import { Card } from "@/components/ui/card";
+
+export const metadata: Metadata = {
+  title: "Log Your Grind",
+  description:
+    "Connect your LeetCode account for automatic solve tracking, or log problems manually to keep your streak alive.",
+  alternates: { canonical: "/upload" },
+};
 
 export default function UploadPage() {
   return (

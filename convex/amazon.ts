@@ -116,7 +116,7 @@ export const saveAmazonJobs = internalMutation({
 export const getJobs = query({
   args: {},
   handler: async (ctx) => {
-    return await ctx.db.query("amazonJobs").order("desc").collect();
+    return await ctx.db.query("amazonJobs").order("desc").take(200);
   },
 });
 

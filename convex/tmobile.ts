@@ -158,7 +158,7 @@ export const saveTMobileJobs = internalMutation({
 export const getJobs = query({
   args: {},
   handler: async (ctx) => {
-    return await ctx.db.query("tmobileJobs").order("desc").collect();
+    return await ctx.db.query("tmobileJobs").order("desc").take(200);
   },
 });
 

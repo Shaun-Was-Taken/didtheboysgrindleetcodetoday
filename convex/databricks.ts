@@ -72,7 +72,7 @@ export const saveDatabricksJobs = internalMutation({
 export const getJobs = query({
   args: {},
   handler: async (ctx) => {
-    return await ctx.db.query("databricksJobs").order("desc").collect();
+    return await ctx.db.query("databricksJobs").order("desc").take(200);
   },
 });
 

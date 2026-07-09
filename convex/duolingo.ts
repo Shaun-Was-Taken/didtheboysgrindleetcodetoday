@@ -72,7 +72,7 @@ export const saveDuolingoJobs = internalMutation({
 export const getJobs = query({
   args: {},
   handler: async (ctx) => {
-    return await ctx.db.query("duolingoJobs").order("desc").collect();
+    return await ctx.db.query("duolingoJobs").order("desc").take(200);
   },
 });
 

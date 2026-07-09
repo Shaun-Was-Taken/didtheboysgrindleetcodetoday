@@ -23,6 +23,8 @@ import AirbnbJobs from "./AirbnbJobs";
 import DatadogJobs from "./DatadogJobs";
 import DuolingoJobs from "./DuolingoJobs";
 import DiscordJobs from "./DiscordJobs";
+import UberJobs from "./UberJobs";
+import AdobeJobs from "./AdobeJobs";
 import { useIsOwner } from "@/hooks/useIsOwner";
 
 export default function JobBoardGrid() {
@@ -55,6 +57,8 @@ export default function JobBoardGrid() {
       <DatadogJobs />
       <DuolingoJobs />
       <DiscordJobs />
+      <UberJobs />
+      <AdobeJobs />
     </div>
   );
 }

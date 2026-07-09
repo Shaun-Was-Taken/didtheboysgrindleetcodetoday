@@ -28,6 +28,8 @@ export const TRACKED_COMPANIES = [
   { name: "Datadog", domain: "datadoghq.com" },
   { name: "Duolingo", domain: "duolingo.com" },
   { name: "Discord", domain: "discord.com" },
+  { name: "Uber", domain: "uber.com" },
+  { name: "Adobe", domain: "adobe.com" },
 ] as const;
 
 export const TRACKED_COMPANY_NAMES: string[] = TRACKED_COMPANIES.map(

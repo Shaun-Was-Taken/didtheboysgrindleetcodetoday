@@ -1,4 +1,12 @@
+import type { Metadata } from "next";
 import GroupsManager from "@/components/GroupsManager";
+
+export const metadata: Metadata = {
+  title: "Accountability Groups",
+  description:
+    "Create a private group, invite your friends, and keep each other grinding LeetCode with a shared daily leaderboard.",
+  alternates: { canonical: "/groups" },
+};
 
 export default function GroupsPage() {
   return (

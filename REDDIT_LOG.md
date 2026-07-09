@@ -15,6 +15,10 @@ Tracks posts already suggested by the `reddit-engagement` skill (never re-sugges
 - u/SnooOranges8697 — r/csMajors "New Grad 2027 tech/fin cs jobs?" — directly asked "is there a new repo for 2027" + "am I late to apply"; exactly the hourly job-board audience. https://www.reddit.com/r/csMajors/comments/1up5eb8/
 - u/Real-Willow153 — r/leetcode "Freshers(<2 yoe) how are you applying for big tech" — asking apply-early vs referral + noting few openings/fake postings; job-board audience. https://www.reddit.com/r/leetcode/comments/1up2w24/
 - u/aaronamano05 — r/csMajors "finding internships w/o prev exp" — directly asked "what job boards do yall use"; job-board bullseye. https://www.reddit.com/r/csMajors/comments/1upz8xf/
+- u/OneWasabi4621 — r/leetcode "Leetcode consistency doubt" — 2nd year, wants an all-green year-long submission chart, struggling to stay consistent; LITERALLY the app's core user (streaks/heatmap/accountability). Strong DM candidate. https://www.reddit.com/r/leetcode/comments/1uqqzs5/
+- u/xavier1011 — r/leetcode "Ramping up leetcode grind" — grinds daily, wants a sustainable rhythm without burnout; accountability-tool audience. https://www.reddit.com/r/leetcode/comments/1uq5iun/
+- u/(OP of 1uqun01) — r/internships "Looking for an Internship" — BCA final year, applying on job boards with zero replies; job-board audience (Shaun replied w/ soft mention 2026-07-08). https://www.reddit.com/r/internships/comments/1uqun01/
+- u/Practical-Swan-1763 — r/leetcode "Looking for a study partner for System Design + DSA" — actively wants an accountability/study partner for FAANG prep; exactly the friend-circle audience. https://www.reddit.com/r/leetcode/comments/1uqug4z/
 
 ## Suggested posts
 
@@ -80,3 +84,21 @@ Tracks posts already suggested by the `reddit-engagement` skill (never re-sugges
 - 1upz398 — r/leetcode — what it takes to break into big tech (Thesis A: has roadmap, consistency is the answer)
 - 1upd6ef — r/leetcode — I started getting better at leetcode (Thesis A: supportive milestone/consistency)
 - 1upy8k5 — r/leetcode — glad I failed my recent interviews (Thesis B: broad application gave him options)
+
+### 2026-07-08
+- 1uqqzs5 — r/leetcode — leetcode consistency doubt / how do you keep an all-green chart (Thesis A bullseye; DM candidate)
+- 1uq5iun — r/leetcode — ramping up grind, prevent burnout, add hours (Thesis A: protect the sustainable rhythm; DM candidate)
+- 1uqbyb0 — r/csMajors — worst job market <2yoe, fake-profile experiment (Thesis B: volume + timing, verify data)
+- 1uq5whq — r/csMajors — summer 2027 EU internship stats, no prev exp, big-tech offer (Thesis B: broad+early application works)
+
+### 2026-07-08 (session 2, new subs added: r/internships + r/learnprogramming)
+- 1uqg1yl — r/internships — summer 2027 rising sophomore, grad-year filter says 2028 but I'm 2029, still apply? (Thesis B: apply anyway, filters soft)
+- 1uqbfm4 — r/learnprogramming — feeling stuck copying tutorials, can't build on own (Thesis A/builder: build small daily, tutorial hell is normal)
+- 1uqvvmo — r/learnprogramming — 1 month in, post-tutorial stuck (Thesis A/builder; same lane as 1uqbfm4, variant reply)
+- 1uqun01 — r/internships — Looking for an Internship, zero replies (Thesis B; Shaun replied w/ soft mention; DM candidate)
+
+### 2026-07-08 (session 3, afternoon — all four subs)
+- 1uqug4z — r/leetcode — looking for a study partner for SysD + DSA (Thesis A/accountability; DM candidate)
+- 1uqznvp — r/csMajors — what to do now to maximize new grad 2026 offer (Thesis B: timing + broad, verify data; low-comment bonus)
+- 1ur1bt9 — r/learnprogramming — how are people building projects so fast? (Thesis A/builder: reps compound, don't compare)
+- 1ur2zmo — r/csMajors — too late for FAANG? transition from F100 entry-level (Thesis A-lite: keep LC warm; scoped, YOE disclaimer)

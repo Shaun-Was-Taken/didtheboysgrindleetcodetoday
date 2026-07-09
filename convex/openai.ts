@@ -72,7 +72,7 @@ export const saveOpenAIJobs = internalMutation({
 export const getJobs = query({
   args: {},
   handler: async (ctx) => {
-    return await ctx.db.query("openaiJobs").order("desc").collect();
+    return await ctx.db.query("openaiJobs").order("desc").take(200);
   },
 });
 
