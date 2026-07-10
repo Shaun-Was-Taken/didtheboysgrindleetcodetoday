@@ -30,6 +30,10 @@ export const TRACKED_COMPANIES = [
   { name: "Discord", domain: "discord.com" },
   { name: "Uber", domain: "uber.com" },
   { name: "Adobe", domain: "adobe.com" },
+  { name: "Netflix", domain: "netflix.com" },
+  { name: "Roblox", domain: "roblox.com" },
+  { name: "DoorDash", domain: "doordash.com" },
+  { name: "Coinbase", domain: "coinbase.com" },
 ] as const;
 
 export const TRACKED_COMPANY_NAMES: string[] = TRACKED_COMPANIES.map(

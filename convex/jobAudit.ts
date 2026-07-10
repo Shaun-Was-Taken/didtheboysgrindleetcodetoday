@@ -107,6 +107,32 @@ async function rawMicrosoftTitles(maxPages = 5): Promise<string[]> {
   return titles;
 }
 
+// Newest ~50 Netflix titles from the open Eightfold API (page size capped at 10).
+async function rawNetflixTitles(maxPages = 5): Promise<string[]> {
+  const titles: string[] = [];
+  for (let page = 0; page < maxPages; page++) {
+    const params = new URLSearchParams({
+      domain: "netflix.com",
+      query: "software engineer",
+      location: "United States",
+      start: String(page * 10),
+      num: "10",
+      sort_by: "timestamp",
+    });
+    const res = await fetch(
+      `https://explore.jobs.netflix.net/api/apply/v2/jobs?${params.toString()}`,
+      { headers: { Accept: "application/json", "User-Agent": BROWSER_UA } }
+    );
+    if (!res.ok) break;
+    const data = await res.json();
+    const positions = data.positions || [];
+    if (positions.length === 0) break;
+    for (const p of positions) titles.push(p.name || "");
+    await new Promise((r) => setTimeout(r, 800));
+  }
+  return titles;
+}
+
 async function rawUberTitles(): Promise<string[]> {
   const res = await fetch(
     "https://www.uber.com/api/loadSearchJobsResults?localeCode=en",
@@ -239,6 +265,10 @@ const SOURCES: { company: string; getTitles: () => Promise<string[]> }[] = [
   { company: "Datadog", getTitles: () => rawGreenhouseTitles("datadog") },
   { company: "Duolingo", getTitles: () => rawGreenhouseTitles("duolingo") },
   { company: "Discord", getTitles: () => rawGreenhouseTitles("discord") },
+  { company: "Roblox", getTitles: () => rawGreenhouseTitles("roblox") },
+  { company: "DoorDash", getTitles: () => rawGreenhouseTitles("doordashusa") },
+  { company: "Coinbase", getTitles: () => rawGreenhouseTitles("coinbase") },
+  { company: "Netflix", getTitles: () => rawNetflixTitles() },
   {
     company: "Adobe",
     getTitles: () =>

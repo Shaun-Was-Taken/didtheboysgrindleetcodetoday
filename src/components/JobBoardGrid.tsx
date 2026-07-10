@@ -25,6 +25,10 @@ import DuolingoJobs from "./DuolingoJobs";
 import DiscordJobs from "./DiscordJobs";
 import UberJobs from "./UberJobs";
 import AdobeJobs from "./AdobeJobs";
+import NetflixJobs from "./NetflixJobs";
+import RobloxJobs from "./RobloxJobs";
+import DoorDashJobs from "./DoorDashJobs";
+import CoinbaseJobs from "./CoinbaseJobs";
 import { useIsOwner } from "@/hooks/useIsOwner";
 
 export default function JobBoardGrid() {
@@ -59,6 +63,10 @@ export default function JobBoardGrid() {
       <DiscordJobs />
       <UberJobs />
       <AdobeJobs />
+      <NetflixJobs />
+      <RobloxJobs />
+      <DoorDashJobs />
+      <CoinbaseJobs />
     </div>
   );
 }

@@ -153,6 +153,30 @@ crons.interval(
   internal.adobe.fetchAdobeJobs
 );
 
+crons.interval(
+  "netflix-job-monitor",
+  { hours: 1 },
+  internal.netflix.fetchNetflixJobs
+);
+
+crons.interval(
+  "roblox-job-monitor",
+  { hours: 1 },
+  internal.roblox.fetchRobloxJobs
+);
+
+crons.interval(
+  "doordash-job-monitor",
+  { hours: 1 },
+  internal.doordash.fetchDoorDashJobs
+);
+
+crons.interval(
+  "coinbase-job-monitor",
+  { hours: 1 },
+  internal.coinbase.fetchCoinbaseJobs
+);
+
 // Daily audit: flag fetchers whose title filter is silently dropping
 // software-ish postings (see convex/jobAudit.ts).
 crons.interval(
