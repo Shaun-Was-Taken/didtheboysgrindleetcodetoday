@@ -1,54 +1,57 @@
 import { internalAction, internalMutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
+import { isSoftwareEngineer } from "./jobFetchers";
 
 export const fetchAmazonJobs = internalAction({
   args: {},
   handler: async (ctx) => {
     console.log("Fetching Amazon jobs...");
     const url = "https://amazon.jobs/en/search.json";
-    
-    const params = new URLSearchParams({
-      offset: "0",
-      result_limit: "100",
-      sort: "recent",
-      "category[]": "software-development",
-      "job_type[]": "Full-Time",
-      "country[]": "USA",
-      distanceType: "Mi",
-      radius: "24km",
-      base_query: "Software Development Engineer",
-    });
 
+    // The whole software-development category, newest first, three pages.
+    // Deliberately NO job_type or base_query narrowing: `job_type=Full-Time`
+    // silently excluded every SDE internship, and the keyword base_query
+    // relevance-ranked away non-"SDE"-titled roles. The category itself is the
+    // population; the shared title predicate filters locally.
+    const jobsRaw: any[] = [];
     try {
-      const response = await fetch(`${url}?${params.toString()}`);
-      if (!response.ok) {
-        console.error(`Failed to fetch Amazon jobs: ${response.statusText}`);
-        return { status: "error", message: response.statusText };
+      for (const offset of [0, 100, 200]) {
+        const params = new URLSearchParams({
+          offset: String(offset),
+          result_limit: "100",
+          sort: "recent",
+          "category[]": "software-development",
+          "country[]": "USA",
+        });
+        const response = await fetch(`${url}?${params.toString()}`);
+        if (!response.ok) {
+          console.error(`Failed to fetch Amazon jobs: ${response.statusText}`);
+          break;
+        }
+        const data = await response.json();
+        const page = data.jobs || [];
+        if (page.length === 0) break;
+        jobsRaw.push(...page);
       }
 
-      const data = await response.json();
-      const jobs = data.jobs || [];
-      
-      console.log(`Found ${jobs.length} total Amazon jobs`);
+      console.log(`Found ${jobsRaw.length} total Amazon jobs`);
 
-      // Filter to only include "Software Development Engineer" in title AND USA locations
-      const filteredJobs = jobs.filter((job: any) => {
+      const filteredJobs = jobsRaw.filter((job: any) => {
         const title = job.title || "";
         const location = job.normalized_location || "";
-        
-        // Check if title includes "Software Development Engineer"
-        const hasCorrectTitle = title.includes("Software Development Engineer");
-        
+
+        if (!isSoftwareEngineer(title)) return false;
+
         // Check if location is in USA (contains "US" or state names)
-        const isUSA = location.includes(", US") || 
+        const isUSA = location.includes(", US") ||
                       location.includes("United States") ||
                       /\b[A-Z]{2}\b/.test(location.split(",").pop()?.trim() || ""); // Check for state abbreviation
-        
-        return hasCorrectTitle && isUSA;
+
+        return isUSA;
       });
 
-      console.log(`Filtered to ${filteredJobs.length} Software Development Engineer jobs in USA`);
+      console.log(`Filtered to ${filteredJobs.length} software engineering jobs in USA`);
 
       const jobsToSave = filteredJobs.map((job: any) => ({
         jobId: job.job_path,

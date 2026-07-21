@@ -39,6 +39,18 @@ export const sendNewJobsEmail = internalAction({
       return { status: "skipped", sent: 0 };
     }
 
+    // Backfill guard: no company organically posts 50+ jobs in one hour. A
+    // batch this large means a fetcher's source or query got broader (or a
+    // table was reseeded) — emailing subscribers a wall of "new" jobs would
+    // read as spam, so log and skip instead.
+    const BACKFILL_THRESHOLD = 25;
+    if (args.jobs.length > BACKFILL_THRESHOLD) {
+      console.log(
+        `Backfill guard: ${args.jobs.length} "new" ${args.company} jobs at once (> ${BACKFILL_THRESHOLD}); skipping alert email.`
+      );
+      return { status: "skipped_backfill", sent: 0 };
+    }
+
     const apiKey = process.env.RESEND_API_KEY;
     if (!apiKey) {
       console.error(

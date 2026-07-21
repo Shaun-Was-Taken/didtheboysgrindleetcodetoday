@@ -87,7 +87,14 @@ interface WorkdayPosting {
   locationsText?: string;
 }
 
-/** Fetch SWE postings from a Workday CXS job board. */
+/**
+ * Fetch SWE postings from a Workday CXS job board.
+ *
+ * Fetches the ENTIRE board (empty searchText) and filters titles locally —
+ * Workday's keyword search silently misses real SWE titles (e.g. "Machine
+ * Learning Engineer", "2026 AI/ML Intern"), so scoping by keyword loses
+ * postings. Facets (country etc.) still apply.
+ */
 export async function fetchWorkdayJobs(opts: {
   tenant: string;
   host: string;
@@ -95,14 +102,18 @@ export async function fetchWorkdayJobs(opts: {
   searchText?: string;
   appliedFacets?: Record<string, string[]>;
 }): Promise<FetchedJob[]> {
-  const { tenant, host, site, searchText = "Software Engineer", appliedFacets = {} } = opts;
+  const { tenant, host, site, searchText = "", appliedFacets = {} } = opts;
   const api = `https://${tenant}.${host}.myworkdayjobs.com/wday/cxs/${tenant}/${site}/jobs`;
   const base = `https://${tenant}.${host}.myworkdayjobs.com/en-US/${site}`;
 
   const jobs: FetchedJob[] = [];
   const limit = 20;
   let offset = 0;
-  const MAX_PAGES = 50;
+  const MAX_PAGES = 100;
+  // Workday reports `total` only on the FIRST page (later pages say 0), so
+  // capture it once — trusting the per-page value silently truncated every
+  // board to 40 postings.
+  let total: number | null = null;
 
   for (let page = 0; page < MAX_PAGES; page++) {
     const res = await fetch(api, {
@@ -116,7 +127,7 @@ export async function fetchWorkdayJobs(opts: {
     }
     const data = await res.json();
     const postings: WorkdayPosting[] = data.jobPostings || [];
-    const total: number = data.total ?? 0;
+    if (total === null) total = Number(data.total ?? 0);
     if (postings.length === 0) break;
 
     for (const p of postings) {
@@ -186,39 +197,50 @@ export async function fetchGoogleJobs(): Promise<FetchedJob[]> {
   const MAX_PAGES = 5; // 20/page
   const seen = new Set<string>();
 
-  for (let page = 1; page <= MAX_PAGES; page++) {
-    const url =
-      "https://www.google.com/about/careers/applications/jobs/results/" +
-      `?q=software%20engineer&location=United%20States&page=${page}`;
-    const res = await fetch(url, {
-      headers: { "User-Agent": "Mozilla/5.0", Accept: "text/html" },
-    });
-    if (!res.ok) {
-      console.error(`Google fetch failed (page ${page}): ${res.statusText}`);
-      break;
-    }
-    const htmlText = await res.text();
-    const matches = [...htmlText.matchAll(/jobs\/results\/(\d+)-([a-z0-9-]+)/g)];
-    if (matches.length === 0) break;
+  // Two sweeps: the main relevance-ranked SWE search, plus an intern-targeted
+  // one. Intern postings never crack the top 100 of the main query, so without
+  // the dedicated sweep they're invisible (this missed the "Software
+  // Engineering Intern, Summer 2027" drop entirely).
+  const SEARCHES = [
+    "?q=software%20engineer&location=United%20States",
+    "?q=software%20engineer&location=United%20States&target_level=INTERN_AND_APPRENTICE",
+  ];
 
-    let newOnPage = 0;
-    for (const m of matches) {
-      const [, id, slug] = m;
-      if (seen.has(id)) continue;
-      seen.add(id);
-      newOnPage++;
-      const title = slug
-        .replace(/-/g, " ")
-        .replace(/\b\w/g, (c) => c.toUpperCase());
-      if (!isSoftwareEngineer(title)) continue;
-      jobs.push({
-        jobId: id,
-        title,
-        link: `https://www.google.com/about/careers/applications/jobs/results/${id}-${slug}`,
-        firstSeen: new Date().toISOString(),
+  for (const search of SEARCHES) {
+    for (let page = 1; page <= MAX_PAGES; page++) {
+      const url =
+        "https://www.google.com/about/careers/applications/jobs/results/" +
+        `${search}&page=${page}`;
+      const res = await fetch(url, {
+        headers: { "User-Agent": "Mozilla/5.0", Accept: "text/html" },
       });
+      if (!res.ok) {
+        console.error(`Google fetch failed (page ${page}): ${res.statusText}`);
+        break;
+      }
+      const htmlText = await res.text();
+      const matches = [...htmlText.matchAll(/jobs\/results\/(\d+)-([a-z0-9-]+)/g)];
+      if (matches.length === 0) break;
+
+      let newOnPage = 0;
+      for (const m of matches) {
+        const [, id, slug] = m;
+        if (seen.has(id)) continue;
+        seen.add(id);
+        newOnPage++;
+        const title = slug
+          .replace(/-/g, " ")
+          .replace(/\b\w/g, (c) => c.toUpperCase());
+        if (!isSoftwareEngineer(title)) continue;
+        jobs.push({
+          jobId: id,
+          title,
+          link: `https://www.google.com/about/careers/applications/jobs/results/${id}-${slug}`,
+          firstSeen: new Date().toISOString(),
+        });
+      }
+      if (newOnPage === 0) break;
     }
-    if (newOnPage === 0) break;
   }
 
   return dedupe(jobs);
@@ -318,7 +340,14 @@ export async function fetchAppleJobs(): Promise<FetchedJob[]> {
       },
       body: JSON.stringify({
         query: "",
-        filters: { teams: [{ team: "teamsAndSubTeams-SFTWR" }] },
+        // Software & Services covers regular roles; the separate Students team
+        // is where Apple posts SWE internships — without it they're invisible.
+        filters: {
+          teams: [
+            { team: "teamsAndSubTeams-SFTWR" },
+            { team: "teamsAndSubTeams-STDNT" },
+          ],
+        },
         page,
         locale: "en-us",
         sort: "newest",

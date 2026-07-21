@@ -2,100 +2,27 @@ import { internalAction, internalMutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import { isOwner } from "./access";
+import { fetchWorkdayJobs } from "./jobFetchers";
 
-// WellSky uses Workday. Job listings come from the Workday CXS API.
-const WORKDAY_TENANT = "wellsky";
-const WORKDAY_HOST = "wd1";
-const WORKDAY_SITE = "WellSkyCareers";
-
-const JOBS_API = `https://${WORKDAY_TENANT}.${WORKDAY_HOST}.myworkdayjobs.com/wday/cxs/${WORKDAY_TENANT}/${WORKDAY_SITE}/jobs`;
-const JOB_BASE_URL = `https://${WORKDAY_TENANT}.${WORKDAY_HOST}.myworkdayjobs.com/en-US/${WORKDAY_SITE}`;
-
-interface WorkdayJobPosting {
-  title: string;
-  externalPath: string;
-  locationsText?: string;
-  postedOn?: string;
-  bulletFields?: string[];
-}
-
+// WellSky uses Workday. The shared helper fetches the full board (paginated,
+// with the first-page-only `total` quirk handled) and filters titles with the
+// shared predicate — the old inline keyword search missed Data Engineer roles.
 export const fetchWellSkyJobs = internalAction({
   args: {},
   handler: async (ctx) => {
     console.log("Fetching WellSky jobs from Workday...");
 
-    let offset = 0;
-    const limit = 20;
-    const MAX_PAGES = 50; // Safety limit
-    const allRelevantJobs: {
-      jobId: string;
-      title: string;
-      link: string;
-      location?: string;
-      firstSeen: string;
-    }[] = [];
-
+    let uniqueJobs;
     try {
-      for (let page = 0; page < MAX_PAGES; page++) {
-        const response = await fetch(JOBS_API, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-          body: JSON.stringify({
-            appliedFacets: {},
-            limit,
-            offset,
-            searchText: "Software Engineer",
-          }),
-        });
-
-        if (!response.ok) {
-          console.error(`Failed to fetch WellSky jobs: ${response.statusText}`);
-          break;
-        }
-
-        const data = await response.json();
-        const postings: WorkdayJobPosting[] = data.jobPostings || [];
-        const total: number = data.total ?? 0;
-
-        if (postings.length === 0) break;
-
-        for (const posting of postings) {
-          const title = posting.title || "Unknown Title";
-          const titleLower = title.toLowerCase();
-
-          // Only software engineering individual-contributor roles
-          const isSoftwareEngineer =
-            titleLower.includes("software engineer") ||
-            titleLower.includes("developer");
-          if (!isSoftwareEngineer) continue;
-
-          allRelevantJobs.push({
-            jobId: posting.externalPath, // unique canonical path
-            title,
-            link: `${JOB_BASE_URL}${posting.externalPath}`,
-            location: posting.locationsText,
-            firstSeen: new Date().toISOString(),
-          });
-        }
-
-        offset += limit;
-        if (offset >= total) break;
-      }
+      uniqueJobs = await fetchWorkdayJobs({
+        tenant: "wellsky",
+        host: "wd1",
+        site: "WellSkyCareers",
+      });
     } catch (error) {
       console.error("Error fetching WellSky jobs:", error);
       return { status: "error", message: String(error) };
     }
-
-    // Deduplicate by jobId
-    const seen = new Set<string>();
-    const uniqueJobs = allRelevantJobs.filter((job) => {
-      if (seen.has(job.jobId)) return false;
-      seen.add(job.jobId);
-      return true;
-    });
 
     console.log(`Found ${uniqueJobs.length} WellSky jobs matching criteria`);
 

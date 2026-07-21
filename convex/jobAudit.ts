@@ -16,6 +16,9 @@ import { isSoftwareEngineer, looksSoftwareish } from "./jobFetchers";
 const BROWSER_UA =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36";
 
+// Full-board sweep (empty searchText), mirroring fetchWorkdayJobs: keyword
+// search misses real SWE titles, and `total` is only reported on the first
+// page (later pages say 0 — trusting it capped every sweep at 40 postings).
 async function rawWorkdayTitles(opts: {
   tenant: string;
   host: string;
@@ -23,11 +26,12 @@ async function rawWorkdayTitles(opts: {
   appliedFacets?: Record<string, string[]>;
   maxPages?: number;
 }): Promise<string[]> {
-  const { tenant, host, site, appliedFacets = {}, maxPages = 10 } = opts;
+  const { tenant, host, site, appliedFacets = {}, maxPages = 100 } = opts;
   const api = `https://${tenant}.${host}.myworkdayjobs.com/wday/cxs/${tenant}/${site}/jobs`;
   const titles: string[] = [];
   let offset = 0;
   const limit = 20;
+  let total: number | null = null;
   for (let page = 0; page < maxPages; page++) {
     const res = await fetch(api, {
       method: "POST",
@@ -36,16 +40,101 @@ async function rawWorkdayTitles(opts: {
         appliedFacets,
         limit,
         offset,
-        searchText: "Software Engineer",
+        searchText: "",
       }),
     });
     if (!res.ok) break;
     const data = await res.json();
     const postings = data.jobPostings || [];
+    if (total === null) total = Number(data.total ?? 0);
     if (postings.length === 0) break;
     for (const p of postings) titles.push(p.title || "");
     offset += limit;
-    if (offset >= (data.total ?? 0)) break;
+    if (offset >= total) break;
+  }
+  return titles;
+}
+
+// Google careers HTML, both sweeps (main + intern-targeted), titles from slugs.
+async function rawGoogleTitles(): Promise<string[]> {
+  const titles: string[] = [];
+  const seen = new Set<string>();
+  const SEARCHES = [
+    "?q=software%20engineer&location=United%20States",
+    "?q=software%20engineer&location=United%20States&target_level=INTERN_AND_APPRENTICE",
+  ];
+  for (const search of SEARCHES) {
+    for (let page = 1; page <= 5; page++) {
+      const res = await fetch(
+        `https://www.google.com/about/careers/applications/jobs/results/${search}&page=${page}`,
+        { headers: { "User-Agent": BROWSER_UA, Accept: "text/html" } }
+      );
+      if (!res.ok) break;
+      const htmlText = await res.text();
+      const matches = [...htmlText.matchAll(/jobs\/results\/(\d+)-([a-z0-9-]+)/g)];
+      if (matches.length === 0) break;
+      let newOnPage = 0;
+      for (const [, id, slug] of matches) {
+        if (seen.has(id)) continue;
+        seen.add(id);
+        newOnPage++;
+        titles.push(slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()));
+      }
+      if (newOnPage === 0) break;
+    }
+  }
+  return titles;
+}
+
+// Amazon software-development category, newest 300, no job_type/keyword
+// narrowing (job_type=Full-Time silently excluded all SDE internships).
+async function rawAmazonTitles(): Promise<string[]> {
+  const titles: string[] = [];
+  for (const offset of [0, 100, 200]) {
+    const res = await fetch(
+      `https://amazon.jobs/en/search.json?offset=${offset}&result_limit=100&sort=recent&category%5B%5D=software-development&country%5B%5D=USA`,
+      { headers: { "User-Agent": BROWSER_UA, Accept: "application/json" } }
+    );
+    if (!res.ok) break;
+    const data = await res.json();
+    const jobs = data.jobs || [];
+    if (jobs.length === 0) break;
+    for (const j of jobs) titles.push(j.title || "");
+  }
+  return titles;
+}
+
+// Apple Software & Services + Students teams (interns live under Students).
+async function rawAppleTitles(maxPages = 5): Promise<string[]> {
+  const titles: string[] = [];
+  for (let page = 1; page <= maxPages; page++) {
+    const res = await fetch("https://jobs.apple.com/api/v1/search", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        "User-Agent": BROWSER_UA,
+        Referer: "https://jobs.apple.com/en-us/search",
+      },
+      body: JSON.stringify({
+        query: "",
+        filters: {
+          teams: [
+            { team: "teamsAndSubTeams-SFTWR" },
+            { team: "teamsAndSubTeams-STDNT" },
+          ],
+        },
+        page,
+        locale: "en-us",
+        sort: "newest",
+        format: { longDate: "MMMM D, YYYY", mediumDate: "MMM D, YYYY" },
+      }),
+    });
+    if (!res.ok) break;
+    const data = await res.json();
+    const postings = data.res?.searchResults || [];
+    if (postings.length === 0) break;
+    for (const p of postings) titles.push(p.postingTitle || "");
   }
   return titles;
 }
@@ -283,6 +372,9 @@ const SOURCES: { company: string; getTitles: () => Promise<string[]> }[] = [
   },
   { company: "Uber", getTitles: () => rawUberTitles() },
   { company: "Microsoft", getTitles: () => rawMicrosoftTitles() },
+  { company: "Google", getTitles: () => rawGoogleTitles() },
+  { company: "Amazon", getTitles: () => rawAmazonTitles() },
+  { company: "Apple", getTitles: () => rawAppleTitles() },
   { company: "Atlassian", getTitles: () => rawAtlassianTitles() },
   { company: "GM", getTitles: () => rawGMTitles() },
   { company: "H&R Block", getTitles: () => rawHRBlockTitles() },

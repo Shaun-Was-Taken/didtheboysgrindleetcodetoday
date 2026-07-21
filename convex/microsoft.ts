@@ -38,62 +38,86 @@ export const fetchMicrosoftJobs = internalAction({
       firstSeen: string;
     }[] = [];
 
+    // Fetch one PCSX page; returns null on failure or a rate-limited
+    // empty-body response so callers can stop the sweep.
+    const fetchPage = async (
+      extraParams: Record<string, string>,
+      start: number
+    ): Promise<{ positions: PcsxPosition[]; total: number } | null> => {
+      const params = new URLSearchParams({
+        domain: "microsoft.com",
+        location: "United States",
+        start: String(start),
+        num: String(PAGE_SIZE),
+        sort_by: "timestamp",
+        ...extraParams,
+      });
+      const res = await fetch(`${PCSX_API}?${params.toString()}`, {
+        headers: { Accept: "application/json", "User-Agent": "Mozilla/5.0" },
+      });
+      if (!res.ok) {
+        console.error(`Microsoft fetch failed (start ${start}): ${res.statusText}`);
+        return null;
+      }
+      try {
+        const data = JSON.parse(await res.text());
+        return {
+          positions: data.data?.positions || [],
+          total: data.data?.count ?? 0,
+        };
+      } catch {
+        console.warn(`Microsoft fetch rate-limited (start ${start}); stopping early.`);
+        return null;
+      }
+    };
+
+    const collect = (positions: PcsxPosition[]) => {
+      for (const p of positions) {
+        const title = p.name || "Unknown Title";
+        if (!isSoftwareEngineer(title)) continue;
+        const location =
+          (p.standardizedLocations?.length
+            ? p.standardizedLocations
+            : p.locations || []
+          ).join(" / ") || undefined;
+        allRelevantJobs.push({
+          jobId: String(p.id),
+          title,
+          link: `https://apply.careers.microsoft.com/careers/job/${p.id}`,
+          location,
+          firstSeen: new Date().toISOString(),
+        });
+      }
+    };
+
     try {
+      // Main sweep: everything under the Software Engineering profession.
       const MAX_PAGES = 40;
       for (let page = 0; page < MAX_PAGES; page++) {
         const start = page * PAGE_SIZE;
-        const params = new URLSearchParams({
-          domain: "microsoft.com",
-          filter_profession: "Software Engineering",
-          location: "United States",
-          start: String(start),
-          num: String(PAGE_SIZE),
-          sort_by: "timestamp",
-        });
-        const res = await fetch(`${PCSX_API}?${params.toString()}`, {
-          headers: { Accept: "application/json", "User-Agent": "Mozilla/5.0" },
-        });
-        if (!res.ok) {
-          console.error(
-            `Microsoft fetch failed (page ${page}): ${res.statusText}`,
-          );
-          break;
-        }
-
-        // Rate-limited responses come back as 200 with an empty body.
-        let data;
-        try {
-          data = JSON.parse(await res.text());
-        } catch {
-          console.warn(
-            `Microsoft fetch rate-limited on page ${page}; stopping early.`,
-          );
-          break;
-        }
-
-        const positions: PcsxPosition[] = data.data?.positions || [];
-        const total: number = data.data?.count ?? 0;
-        if (positions.length === 0) break;
-
-        for (const p of positions) {
-          const title = p.name || "Unknown Title";
-          if (!isSoftwareEngineer(title)) continue;
-          const location =
-            (p.standardizedLocations?.length
-              ? p.standardizedLocations
-              : p.locations || []
-            ).join(" / ") || undefined;
-          allRelevantJobs.push({
-            jobId: String(p.id),
-            title,
-            link: `https://apply.careers.microsoft.com/careers/job/${p.id}`,
-            location,
-            firstSeen: new Date().toISOString(),
-          });
-        }
-
-        if (start + positions.length >= total) break;
+        const result = await fetchPage(
+          { filter_profession: "Software Engineering" },
+          start
+        );
+        if (!result || result.positions.length === 0) break;
+        collect(result.positions);
+        if (start + result.positions.length >= result.total) break;
         await sleep(PAGE_DELAY_MS);
+      }
+
+      // Defensive intern sweep (same idea as the Google fetcher's): if
+      // Microsoft posts university/intern SWE roles outside the "Software
+      // Engineering" profession, the keyword query still surfaces them.
+      for (let page = 0; page < 3; page++) {
+        await sleep(PAGE_DELAY_MS);
+        const start = page * PAGE_SIZE;
+        const result = await fetchPage(
+          { query: "software engineer intern" },
+          start
+        );
+        if (!result || result.positions.length === 0) break;
+        collect(result.positions);
+        if (start + result.positions.length >= result.total) break;
       }
     } catch (error) {
       console.error("Error fetching Microsoft jobs:", error);
